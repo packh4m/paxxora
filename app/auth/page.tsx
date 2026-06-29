@@ -1,7 +1,8 @@
-"use client";
+p"use client";
 
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import Image from "next/image";
 import Link from "next/link";
 
 export default function AuthPage() {
@@ -27,13 +28,8 @@ export default function AuthPage() {
       <div className="flex-1 flex items-center justify-center px-4">
         <div className="w-full max-w-sm text-center">
 
-          {/* Icon */}
           <div className="flex justify-center mb-5">
-            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M3 7c0-1.1.9-2 2-2h1.5M21 7c0-1.1-.9-2-2-2h-1.5M3 17c0 1.1.9 2 2 2h1.5M21 17c0 1.1-.9 2-2 2h-1.5"/>
-              <circle cx="12" cy="12" r="4"/>
-              <path d="M9 9l1.5 1.5M15 9l-1.5 1.5M9 15l1.5-1.5M15 15l-1.5-1.5"/>
-            </svg>
+            <Image src="/paxxora.png" alt="Paxxora" width={52} height={52} />
           </div>
 
           <h1 className="text-2xl font-semibold text-black tracking-tight mb-1">
