@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
+import Link from "next/link";
 
 export function CtaSection() {
   const [isVisible, setIsVisible] = useState(false);
@@ -60,11 +61,14 @@ export function CtaSection() {
 
               <div className="flex flex-col sm:flex-row items-start gap-4">
                 <Button
+                  asChild
                   size="lg"
                   className="bg-foreground hover:bg-foreground/90 text-background px-8 h-14 text-base rounded-full group"
                 >
-                  Analyse My Face — Free
-                  <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
+                  <Link href="/auth">
+                    Analyse My Face — Free
+                    <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
+                  </Link>
                 </Button>
               </div>
 
