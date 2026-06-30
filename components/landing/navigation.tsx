@@ -55,7 +55,7 @@ export function Navigation() {
 
           <div className="hidden md:flex items-center gap-12">
             {navLinks.map((link) => (
-              
+              <a
                 key={link.name}
                 href={link.href}
                 className="text-sm text-foreground/70 hover:text-foreground transition-colors duration-300 relative group"
@@ -101,7 +101,7 @@ export function Navigation() {
         <div className="flex flex-col h-full px-8 pt-28 pb-8">
           <div className="flex-1 flex flex-col justify-center gap-8">
             {navLinks.map((link, i) => (
-              
+              <a
                 key={link.name}
                 href={link.href}
                 onClick={() => setIsMobileMenuOpen(false)}
