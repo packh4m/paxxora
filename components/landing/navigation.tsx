@@ -57,7 +57,7 @@ export function Navigation() {
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-12">
             {navLinks.map((link) => (
-              
+                
                 key={link.name}
                 href={link.href}
                 className="text-sm text-foreground/70
