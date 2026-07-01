@@ -12,7 +12,7 @@ export default function AuthPage() {
   const handleGoogleSignIn = async () => {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: `${window.location.origin}/auth/callback` },
+      options: { redirectTo: "https://paxxora.com/auth/callback" },
     });
     if (error) setError(error.message);
   };
