@@ -1,267 +1,131 @@
 "use client";
 
-import { useState, useCallback } from "react";
-import PhotoUpload from "@/components/PhotoUpload";
-import ResultsDisplay from "@/components/ResultsDisplay";
-import DebugOverlay from "@/components/DebugOverlay";
-import ManualPointPlacement from "@/components/ManualPointPlacement";
-import { AnalysisResult, Point, VisionScores } from "@/lib/types";
-import { runScoringTest, testDeviationScoring, testModelPhoto, testBelowAverage } from "@/lib/testScoring";
-import { calculateAllMetrics } from "@/lib/metrics";
-import { calculateOverallScore } from "@/lib/scoring";
-import Link from "next/link";
+import { useCallback, useState } from "react";
 
-async function imageUrlToBase64(url: string): Promise<{ base64: string; mediaType: string }> {
-  const response = await fetch(url);
-  const blob = await response.blob();
-  const mediaType = blob.type || "image/jpeg";
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const dataUrl = reader.result as string;
-      const base64 = dataUrl.split(",")[1];
-      resolve({ base64, mediaType });
-    };
-    reader.onerror = reject;
-    reader.readAsDataURL(blob);
-  });
+interface PhotoUploadProps {
+  onImageSelect: (file: File) => void;
+  isAnalyzing: boolean;
 }
 
-async function getVisionScore(imageUrl: string): Promise<{ visionScores?: VisionScores; visionError?: string }> {
-  try {
-    const { base64, mediaType } = await imageUrlToBase64(imageUrl);
-    const response = await fetch("/api/vision-score", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ imageBase64: base64, imageMediaType: mediaType }),
-    });
-    if (!response.ok) {
-      const errorData = await response.json();
-      return { visionError: errorData.error || "Vision API request failed" };
-    }
-    const data = await response.json();
-    if (data.result) return { visionScores: data.result as VisionScores };
-    return { visionError: "No result from vision API" };
-  } catch (error) {
-    console.error("Vision score error:", error);
-    return { visionError: error instanceof Error ? error.message : "Unknown error" };
-  }
-}
+export default function PhotoUpload({
+  onImageSelect,
+  isAnalyzing,
+}: PhotoUploadProps) {
+  const [isDragging, setIsDragging] = useState(false);
+  const [preview, setPreview] = useState<string | null>(null);
 
-type AppState = "upload" | "debug" | "results" | "error" | "manual";
+  const handleFile = useCallback(
+    (file: File) => {
+      if (!file.type.startsWith("image/")) {
+        alert("Please upload an image file");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setPreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+      onImageSelect(file);
+    },
+    [onImageSelect]
+  );
 
-export default function Home() {
-  const [state, setState] = useState<AppState>("upload");
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [result, setResult] = useState<AnalysisResult | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [manualImageData, setManualImageData] = useState<{
-    url: string;
-    width: number;
-    height: number;
-  } | null>(null);
+  const handleDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      setIsDragging(false);
+      const file = e.dataTransfer.files[0];
+      if (file) handleFile(file);
+    },
+    [handleFile]
+  );
 
-  const handleImageSelect = useCallback((file: File) => {
-    setImageFile(file);
-    setPreviewUrl(URL.createObjectURL(file));
-    setError(null);
-    const img = new Image();
-    img.onload = () => {
-      setManualImageData({
-        url: URL.createObjectURL(file),
-        width: img.naturalWidth,
-        height: img.naturalHeight,
-      });
-      setState("manual");
-    };
-    img.src = URL.createObjectURL(file);
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
   }, []);
 
-  const handleManualComplete = useCallback((landmarks: Point[]) => {
-    if (!manualImageData) return;
-    const landmarkArray: Point[] = new Array(53).fill({ x: 0, y: 0 });
-    landmarks.forEach((point, arrayIndex) => {
-      const faceiqIndex = arrayIndex + 1;
-      landmarkArray[faceiqIndex] = point;
-    });
-    const metrics = calculateAllMetrics({
-      landmarks: landmarkArray,
-      imageWidth: manualImageData.width,
-      imageHeight: manualImageData.height,
-    });
-    const scores = metrics.map((m) => m.score);
-    const metricIds = metrics.map((m) => m.definition.id);
-    const overallScore = calculateOverallScore(scores, metricIds);
-    const analysisResult: AnalysisResult = {
-      metrics,
-      overallScore,
-      imageUrl: manualImageData.url,
-      analyzedAt: new Date(),
-      landmarks: landmarkArray,
-      imageWidth: manualImageData.width,
-      imageHeight: manualImageData.height,
-      visionScores: undefined,
-      visionError: undefined,
-      finalScore: undefined,
-    };
-    setResult(analysisResult);
-    setState("results");
-    getVisionScore(manualImageData.url).then(({ visionScores, visionError }) => {
-      setResult((prev) => {
-        if (!prev) return prev;
-        let visionAvg: number | undefined;
-        if (visionScores) {
-          const scores = [
-            visionScores.jaw_definition,
-            visionScores.cheekbone_prominence,
-            visionScores.skin_quality,
-            visionScores.sexual_dimorphism,
-            visionScores.facial_fat,
-            visionScores.overall_harmony,
-            visionScores.eye_appeal,
-            visionScores.overall_impression,
-          ];
-          visionAvg = scores.reduce((a, b) => a + b, 0) / scores.length;
-        }
-        const finalScore = visionAvg !== undefined
-          ? (prev.overallScore * 0.5) + (visionAvg * 0.5)
-          : prev.overallScore;
-        return { ...prev, visionScores, visionError, finalScore };
-      });
-    });
-  }, [manualImageData]);
-
-  const handleManualCancel = useCallback(() => {
-    setState("upload");
-    setManualImageData(null);
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
   }, []);
 
-  const handleContinueToResults = useCallback(() => {
-    setState("results");
-  }, []);
-
-  const handleReset = useCallback(() => {
-    setState("upload");
-    setImageFile(null);
-    setPreviewUrl(null);
-    setResult(null);
-    setError(null);
-    setManualImageData(null);
-  }, []);
-
-  if (state === "manual" && manualImageData) {
-    return (
-      <ManualPointPlacement
-        imageUrl={manualImageData.url}
-        imageWidth={manualImageData.width}
-        imageHeight={manualImageData.height}
-        onComplete={handleManualComplete}
-        onCancel={handleManualCancel}
-      />
-    );
-  }
-
-  if (state === "debug" && result && result.landmarks) {
-    return (
-      <DebugOverlay
-        imageUrl={result.imageUrl}
-        landmarks={result.landmarks}
-        imageWidth={result.imageWidth || 0}
-        imageHeight={result.imageHeight || 0}
-        onContinue={handleContinueToResults}
-      />
-    );
-  }
-
-  if (state === "results" && result) {
-    return <ResultsDisplay result={result} onReset={handleReset} />;
-  }
+  const handleInputChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (file) handleFile(file);
+    },
+    [handleFile]
+  );
 
   return (
-    <div className="min-h-screen bg-[#f7f7f5] flex flex-col">
-      {/* Header */}
-      <header className="flex items-center justify-between px-8 py-6 border-b border-zinc-200">
-        <Link href="/dashboard" className="text-lg font-semibold text-black tracking-tight">
-          Paxxora
-        </Link>
-        <Link href="/dashboard" className="text-sm text-zinc-400 hover:text-black transition-colors">
-          ← Back
-        </Link>
-      </header>
+    <div className="w-full max-w-lg mx-auto">
+      <div
+        className={`
+          relative border-2 border-dashed rounded-2xl p-8 text-center
+          transition-all duration-200 cursor-pointer bg-white
+          ${isDragging
+            ? "border-black bg-zinc-50"
+            : "border-zinc-200 hover:border-zinc-400"
+          }
+          ${isAnalyzing ? "pointer-events-none opacity-50" : ""}
+        `}
+        onDrop={handleDrop}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onClick={() => document.getElementById("file-input")?.click()}
+      >
+        <input
+          id="file-input"
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={handleInputChange}
+          disabled={isAnalyzing}
+        />
 
-      {/* Main */}
-      <main className="flex-1 flex flex-col items-center justify-center px-4 py-12">
-        <div className="w-full max-w-xl">
-
-          <div className="text-center mb-10">
-            <p className="text-xs font-mono uppercase tracking-widest text-zinc-400 mb-4">
-              Step 1 of 2
-            </p>
-            <h1 className="text-3xl md:text-4xl font-semibold text-black tracking-tight mb-3">
-              Upload your photo
-            </h1>
-            <p className="text-zinc-500 text-sm max-w-sm mx-auto leading-relaxed">
-              Use a clear, front-facing photo with good lighting. No sunglasses, no tilted angles.
-            </p>
-          </div>
-
-          <PhotoUpload
-            onImageSelect={handleImageSelect}
-            isAnalyzing={false}
-          />
-
-          {error && (
-            <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-xl">
-              <p className="text-red-500 text-sm text-center">{error}</p>
-              <button
-                onClick={handleReset}
-                className="mt-3 w-full py-2 text-sm text-red-400 hover:text-red-500 transition-colors"
-              >
-                Try Again
-              </button>
-            </div>
-          )}
-
-          {/* Stats */}
-          <div className="mt-10 grid grid-cols-3 gap-4 text-center">
-            {[
-              { value: "33", label: "Facial Metrics" },
-              { value: "52", label: "Key Landmarks" },
-              { value: "0–10", label: "Precision Score" },
-            ].map((stat) => (
-              <div key={stat.label} className="p-4 bg-white rounded-xl border border-zinc-200">
-                <div className="text-xl font-semibold text-black mb-1">{stat.value}</div>
-                <div className="text-xs text-zinc-400">{stat.label}</div>
+        {preview ? (
+          <div className="space-y-4">
+            <img
+              src={preview}
+              alt="Preview"
+              className="max-h-64 mx-auto rounded-lg object-contain"
+            />
+            {isAnalyzing ? (
+              <div className="flex items-center justify-center gap-2 text-zinc-500">
+                <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24" fill="none">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                </svg>
+                <span className="text-sm">Analyzing facial features...</span>
               </div>
-            ))}
+            ) : (
+              <p className="text-sm text-zinc-400">
+                Click or drag to upload a different photo
+              </p>
+            )}
           </div>
-
-          {/* How it works */}
-          <div className="mt-6 p-6 bg-white rounded-xl border border-zinc-200">
-            <h3 className="text-xs font-mono uppercase tracking-widest text-zinc-400 mb-4">How it works</h3>
-            <div className="space-y-3">
-              {[
-                "Upload a clear, front-facing photo with good lighting",
-                "Place 52 key facial landmarks with guided reference images",
-                "33 metrics calculated and scored against ideal ranges",
-              ].map((step, i) => (
-                <div key={i} className="flex items-start gap-3">
-                  <span className="flex-shrink-0 w-5 h-5 rounded-full bg-black text-white text-xs flex items-center justify-center">
-                    {i + 1}
-                  </span>
-                  <p className="text-sm text-zinc-500">{step}</p>
-                </div>
-              ))}
+        ) : (
+          <div className="space-y-4">
+            <div className="w-16 h-16 mx-auto rounded-full bg-zinc-100 flex items-center justify-center">
+              <svg className="w-8 h-8 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
             </div>
+            <div>
+              <p className="text-base font-medium text-black">
+                Upload your photo
+              </p>
+              <p className="text-sm text-zinc-400 mt-1">
+                Drag and drop or click to select
+              </p>
+            </div>
+            <p className="text-xs text-zinc-400">
+              Use a front-facing photo with good lighting for best results
+            </p>
           </div>
-
-        </div>
-      </main>
-
-      <footer className="border-t border-zinc-200 px-8 py-4 text-center text-xs text-zinc-400">
-        All analysis runs locally in your browser. No images are stored on any server.
-      </footer>
+        )}
+      </div>
     </div>
   );
 }
