@@ -7,160 +7,59 @@ interface FaceReferenceImageProps {
   completedPoints: number[];
 }
 
-// Zoom configurations for each landmark region (52-point system, 0-indexed)
-// Returns { scale, originX, originY } for CSS transform
+const LANDMARK_CROP_FILES: Record<number, string> = {
+  0: "hairline.png",
+  1: "left pupil.png",
+  2: "right pupil.png",
+};
+
 const getZoomConfig = (pointIndex: number): { scale: number; originX: string; originY: string } => {
-  // Hairline (0)
-  if (pointIndex === 0) {
-    return { scale: 2, originX: '50%', originY: '15%' };
-  }
-  // Left Pupil (1)
-  if (pointIndex === 1) {
-    return { scale: 2.5, originX: '40%', originY: '37%' };
-  }
-  // Right Pupil (2)
-  if (pointIndex === 2) {
-    return { scale: 2.5, originX: '60%', originY: '37%' };
-  }
-  // Nose sides - Left/Right Ala Nasi (3-4)
-  if (pointIndex >= 3 && pointIndex <= 4) {
-    return { scale: 2.2, originX: '50%', originY: '52%' };
-  }
-  // Lower Lip Center (5)
-  if (pointIndex === 5) {
-    return { scale: 2.2, originX: '50%', originY: '60%' };
-  }
-  // Chin Bottom - Menton (6)
-  if (pointIndex === 6) {
-    return { scale: 2, originX: '50%', originY: '70%' };
-  }
-  // Left Outer Ear (7)
-  if (pointIndex === 7) {
-    return { scale: 2.2, originX: '26%', originY: '42%' };
-  }
-  // Right Outer Ear (8)
-  if (pointIndex === 8) {
-    return { scale: 2.2, originX: '74%', originY: '42%' };
-  }
-  // Left Temple (9)
-  if (pointIndex === 9) {
-    return { scale: 2, originX: '32%', originY: '28%' };
-  }
-  // Right Temple (10)
-  if (pointIndex === 10) {
-    return { scale: 2, originX: '68%', originY: '28%' };
-  }
-  // Left Eye points: Medial/Lateral Canthus, Upper/Lower Eyelid, Hood, Crease (11-15, 21)
-  if ((pointIndex >= 11 && pointIndex <= 15) || pointIndex === 21) {
-    return { scale: 2.5, originX: '40%', originY: '37%' };
-  }
-  // Left Brow points: Head, Inner Corner, Arch, Peak, Tail (16-20)
-  if (pointIndex >= 16 && pointIndex <= 20) {
-    return { scale: 2.2, originX: '40%', originY: '32%' };
-  }
-  // Right Eye points: Medial/Lateral Canthus, Upper/Lower Eyelid, Hood, Crease (22-26, 32)
-  if ((pointIndex >= 22 && pointIndex <= 26) || pointIndex === 32) {
-    return { scale: 2.5, originX: '60%', originY: '37%' };
-  }
-  // Right Brow points: Head, Inner Corner, Arch, Peak, Tail (27-31)
-  if (pointIndex >= 27 && pointIndex <= 31) {
-    return { scale: 2.2, originX: '60%', originY: '32%' };
-  }
-  // Nose points: Sellion, Subnasale, Left/Right Bridge (33-36)
-  if (pointIndex >= 33 && pointIndex <= 36) {
-    return { scale: 2.2, originX: '50%', originY: '45%' };
-  }
-  // Mouth points: Corners, Cupid's Bow, Inner Bow, Middle (37-41)
-  if (pointIndex >= 37 && pointIndex <= 41) {
-    return { scale: 2.2, originX: '50%', originY: '58%' };
-  }
-  // Left Jaw angles: Upper and Lower (42, 44)
-  if (pointIndex === 42 || pointIndex === 44) {
-    return { scale: 2, originX: '32%', originY: '57%' };
-  }
-  // Right Jaw angles: Upper and Lower (43, 45)
-  if (pointIndex === 43 || pointIndex === 45) {
-    return { scale: 2, originX: '68%', originY: '57%' };
-  }
-  // Chin points: Left and Right (46-47)
-  if (pointIndex >= 46 && pointIndex <= 47) {
-    return { scale: 2, originX: '50%', originY: '68%' };
-  }
-  // Neck points: Left and Right (48-49)
-  if (pointIndex >= 48 && pointIndex <= 49) {
-    return { scale: 2, originX: '50%', originY: '76%' };
-  }
-  // Left Cheekbone (50)
-  if (pointIndex === 50) {
-    return { scale: 2, originX: '34%', originY: '45%' };
-  }
-  // Right Cheekbone (51)
-  if (pointIndex === 51) {
-    return { scale: 2, originX: '66%', originY: '45%' };
-  }
-  // Default - no zoom
+  if (pointIndex === 0) return { scale: 2, originX: '50%', originY: '15%' };
+  if (pointIndex === 1) return { scale: 2.5, originX: '40%', originY: '37%' };
+  if (pointIndex === 2) return { scale: 2.5, originX: '60%', originY: '37%' };
+  if (pointIndex >= 3 && pointIndex <= 4) return { scale: 2.2, originX: '50%', originY: '52%' };
+  if (pointIndex === 5) return { scale: 2.2, originX: '50%', originY: '60%' };
+  if (pointIndex === 6) return { scale: 2, originX: '50%', originY: '70%' };
+  if (pointIndex === 7) return { scale: 2.2, originX: '26%', originY: '42%' };
+  if (pointIndex === 8) return { scale: 2.2, originX: '74%', originY: '42%' };
+  if (pointIndex === 9) return { scale: 2, originX: '32%', originY: '28%' };
+  if (pointIndex === 10) return { scale: 2, originX: '68%', originY: '28%' };
+  if ((pointIndex >= 11 && pointIndex <= 15) || pointIndex === 21) return { scale: 2.5, originX: '40%', originY: '37%' };
+  if (pointIndex >= 16 && pointIndex <= 20) return { scale: 2.2, originX: '40%', originY: '32%' };
+  if ((pointIndex >= 22 && pointIndex <= 26) || pointIndex === 32) return { scale: 2.5, originX: '60%', originY: '37%' };
+  if (pointIndex >= 27 && pointIndex <= 31) return { scale: 2.2, originX: '60%', originY: '32%' };
+  if (pointIndex >= 33 && pointIndex <= 36) return { scale: 2.2, originX: '50%', originY: '45%' };
+  if (pointIndex >= 37 && pointIndex <= 41) return { scale: 2.2, originX: '50%', originY: '58%' };
+  if (pointIndex === 42 || pointIndex === 44) return { scale: 2, originX: '32%', originY: '57%' };
+  if (pointIndex === 43 || pointIndex === 45) return { scale: 2, originX: '68%', originY: '57%' };
+  if (pointIndex >= 46 && pointIndex <= 47) return { scale: 2, originX: '50%', originY: '68%' };
+  if (pointIndex >= 48 && pointIndex <= 49) return { scale: 2, originX: '50%', originY: '76%' };
+  if (pointIndex === 50) return { scale: 2, originX: '34%', originY: '45%' };
+  if (pointIndex === 51) return { scale: 2, originX: '66%', originY: '45%' };
   return { scale: 1, originX: '50%', originY: '50%' };
 };
 
-// Landmark dot positions on the reference image (x, y as percentages)
-// 52-point system (0-indexed array, FaceIQ 1-52)
-// Calibrated using /admin/calibrate-max tool
 export const LANDMARK_DOT_POSITIONS: { x: number; y: number }[] = [
-  { x: 49.2, y: 18.5 },  // 0: Hairline (Trichion)
-  { x: 40.3, y: 36.5 },  // 1: Left Pupil
-  { x: 59.8, y: 36.4 },  // 2: Right Pupil
-  { x: 44.6, y: 47.5 },  // 3: Left Ala Nasi
-  { x: 56, y: 47.5 },  // 4: Right Ala Nasi
-  { x: 50.4, y: 57.3 },  // 5: Labrale Inferius (Lower Lip Center)
-  { x: 50.1, y: 66.8 },  // 6: Menton (Chin Bottom)
-  { x: 23.4, y: 38.4 },  // 7: Left Tragion (Left Ear)
-  { x: 75.7, y: 38.9 },  // 8: Right Tragion (Right Ear)
-  { x: 31.7, y: 24.7 },  // 9: Left Temple
-  { x: 67.6, y: 24.3 },  // 10: Right Temple
-  { x: 45, y: 37.4 },  // 11: Left Medial Canthus (Inner Eye)
-  { x: 36.5, y: 37 },  // 12: Left Lateral Canthus (Outer Eye)
-  { x: 40.2, y: 35.6 },  // 13: Left Upper Eyelid
-  { x: 40.2, y: 38.2 },  // 14: Left Lower Eyelid
-  { x: 35.3, y: 36.6 },  // 15: Left Eyelid Hood
-  { x: 47.3, y: 33.4 },  // 16: Left Brow Head
-  { x: 47.3, y: 35.2 },  // 17: Left Brow Inner
-  { x: 36.3, y: 34.8 },  // 18: Left Brow Arch
-  { x: 36.4, y: 31.8 },  // 19: Left Brow Peak
-  { x: 31.7, y: 36.4 },  // 20: Left Brow Tail
-  { x: 40.2, y: 35.1 },  // 21: Left Eyelid Crease
-  { x: 55.2, y: 37.4 },  // 22: Right Medial Canthus (Inner Eye)
-  { x: 63.5, y: 37 },  // 23: Right Lateral Canthus (Outer Eye)
-  { x: 59.7, y: 35.4 },  // 24: Right Upper Eyelid
-  { x: 60, y: 38 },  // 25: Right Lower Eyelid
-  { x: 65.1, y: 36.6 },  // 26: Right Eyelid Hood
-  { x: 53.2, y: 33.3 },  // 27: Right Brow Head
-  { x: 53.2, y: 35.1 },  // 28: Right Brow Inner
-  { x: 64.7, y: 34.9 },  // 29: Right Brow Arch
-  { x: 64.3, y: 31.9 },  // 30: Right Brow Peak
-  { x: 68.2, y: 36 },  // 31: Right Brow Tail
-  { x: 59.7, y: 35 },  // 32: Right Eyelid Crease
-  { x: 53.6, y: 48.8 },  // 33: Sellion (Nasal Base)
-  { x: 50.4, y: 49 },  // 34: Subnasale (Nose Bottom)
-  { x: 47.5, y: 40.8 },  // 35: Left Dorsum Nasi (Nose Bridge)
-  { x: 53.2, y: 40.7 },  // 36: Right Dorsum Nasi (Nose Bridge)
-  { x: 42.3, y: 54.7 },  // 37: Left Cheilion (Mouth Corner)
-  { x: 58.3, y: 54.7 },  // 38: Right Cheilion (Mouth Corner)
-  { x: 52.5, y: 53.1 },  // 39: Labrale Superius (Upper Lip)
-  { x: 50.2, y: 54.1 },  // 40: Cupid's Bow
-  { x: 50.2, y: 55.1 },  // 41: Mouth Middle
-  { x: 32.2, y: 55.4 },  // 42: Left Gonion Superior
-  { x: 68, y: 54.9 },  // 43: Right Gonion Superior
-  { x: 35.6, y: 59.7 },  // 44: Left Gonion Inferior
-  { x: 64.9, y: 59.6 },  // 45: Right Gonion Inferior
-  { x: 41.6, y: 64.5 },  // 46: Left Mentum Lateralis (Chin Side)
-  { x: 59.9, y: 64 },  // 47: Right Mentum Lateralis (Chin Side)
-  { x: 32.9, y: 59.1 },  // 48: Left Cervical Lateralis (Neck)
-  { x: 67.1, y: 59.6 },  // 49: Right Cervical Lateralis (Neck)
-  { x: 28.9, y: 39.9 },  // 50: Left Zygion (Cheekbone)
-  { x: 70.6, y: 39.8 },  // 51: Right Zygion (Cheekbone)
+  { x: 49.2, y: 18.5 }, { x: 40.3, y: 36.5 }, { x: 59.8, y: 36.4 },
+  { x: 44.6, y: 47.5 }, { x: 56, y: 47.5 }, { x: 50.4, y: 57.3 },
+  { x: 50.1, y: 66.8 }, { x: 23.4, y: 38.4 }, { x: 75.7, y: 38.9 },
+  { x: 31.7, y: 24.7 }, { x: 67.6, y: 24.3 }, { x: 45, y: 37.4 },
+  { x: 36.5, y: 37 }, { x: 40.2, y: 35.6 }, { x: 40.2, y: 38.2 },
+  { x: 35.3, y: 36.6 }, { x: 47.3, y: 33.4 }, { x: 47.3, y: 35.2 },
+  { x: 36.3, y: 34.8 }, { x: 36.4, y: 31.8 }, { x: 31.7, y: 36.4 },
+  { x: 40.2, y: 35.1 }, { x: 55.2, y: 37.4 }, { x: 63.5, y: 37 },
+  { x: 59.7, y: 35.4 }, { x: 60, y: 38 }, { x: 65.1, y: 36.6 },
+  { x: 53.2, y: 33.3 }, { x: 53.2, y: 35.1 }, { x: 64.7, y: 34.9 },
+  { x: 64.3, y: 31.9 }, { x: 68.2, y: 36 }, { x: 59.7, y: 35 },
+  { x: 53.6, y: 48.8 }, { x: 50.4, y: 49 }, { x: 47.5, y: 40.8 },
+  { x: 53.2, y: 40.7 }, { x: 42.3, y: 54.7 }, { x: 58.3, y: 54.7 },
+  { x: 52.5, y: 53.1 }, { x: 50.2, y: 54.1 }, { x: 50.2, y: 55.1 },
+  { x: 32.2, y: 55.4 }, { x: 68, y: 54.9 }, { x: 35.6, y: 59.7 },
+  { x: 64.9, y: 59.6 }, { x: 41.6, y: 64.5 }, { x: 59.9, y: 64 },
+  { x: 32.9, y: 59.1 }, { x: 67.1, y: 59.6 }, { x: 28.9, y: 39.9 },
+  { x: 70.6, y: 39.8 },
 ];
 
-// Landmark metadata - 52 points (1-indexed to match FaceIQ)
 export const LANDMARK_POINTS = [
   { id: 1, name: "Hairline", latin: "Trichion", description: "Center of hairline at forehead" },
   { id: 2, name: "Left Pupil", latin: "Left Pupil", description: "Center of left pupil" },
@@ -217,11 +116,11 @@ export const LANDMARK_POINTS = [
 ];
 
 export default function FaceReferenceImage({ activePointIndex, completedPoints }: FaceReferenceImageProps) {
-  const [extraZoom, setExtraZoom] = useState(1); // 1 = normal, 1.5 = extra, 2 = max
+  const [extraZoom, setExtraZoom] = useState(1);
   const currentPoint = LANDMARK_POINTS[activePointIndex];
+  const hasCrop = activePointIndex in LANDMARK_CROP_FILES;
   const baseZoomConfig = getZoomConfig(activePointIndex);
 
-  // Apply extra zoom multiplier
   const zoomConfig = {
     ...baseZoomConfig,
     scale: baseZoomConfig.scale * extraZoom,
@@ -241,97 +140,80 @@ export default function FaceReferenceImage({ activePointIndex, completedPoints }
 
   return (
     <div className="flex flex-col items-center">
-      {/* Speech bubble with instruction */}
-      <div className="relative mb-4 w-full">
-        <div className="bg-zinc-800 rounded-xl p-4 border border-zinc-700">
-          <div className="flex items-center gap-2 mb-2">
-            <span className="w-6 h-6 rounded-full bg-amber-400 text-black text-xs font-bold flex items-center justify-center">
-              {activePointIndex + 1}
-            </span>
-            <span className="text-amber-400 font-medium text-sm">{currentPoint.name}</span>
-          </div>
-          <p className="text-zinc-300 text-sm leading-relaxed">
-            {currentPoint.description}
-          </p>
+      {/* Point info */}
+      <div className="w-full mb-3">
+        <div className="flex items-center gap-2 mb-1">
+          <span className="w-5 h-5 rounded-full bg-black text-white text-xs font-medium flex items-center justify-center flex-shrink-0">
+            {activePointIndex + 1}
+          </span>
+          <span className="text-sm font-medium text-black">{currentPoint.name}</span>
         </div>
-        {/* Speech bubble pointer */}
-        <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-zinc-800 border-r border-b border-zinc-700 rotate-45" />
+        <p className="text-xs text-zinc-400 italic">{currentPoint.latin}</p>
+        <p className="text-xs text-zinc-500 mt-1">{currentPoint.description}</p>
       </div>
 
-      {/* Reference image with dot overlay - zooms to relevant region */}
-      <div className="relative bg-zinc-900 rounded-xl overflow-hidden" style={{ width: 250, height: 300 }}>
-        {/* Zoom control button */}
-        <button
-          onClick={cycleZoom}
-          className="absolute top-2 right-2 z-10 px-2 py-1 bg-black/60 hover:bg-black/80 rounded text-xs font-medium text-white transition-colors flex items-center gap-1"
-        >
-          <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
-          </svg>
-          {getZoomLabel()}
-        </button>
-        {/* Zoomable container - wraps both image and dots so they move together */}
-        <div
-          className="absolute inset-0 transition-transform duration-300 ease-out"
-          style={{
-            transform: `scale(${zoomConfig.scale})`,
-            transformOrigin: `${zoomConfig.originX} ${zoomConfig.originY}`,
-          }}
-        >
-          {/* Reference image */}
+      {/* Reference image */}
+      <div className="relative bg-zinc-100 rounded-xl overflow-hidden border border-zinc-200" style={{ width: '100%', height: 220 }}>
+        {hasCrop ? (
           <img
-            src="/max.assistant.webp"
-            alt="Face reference"
+            src={`/landmarks/${LANDMARK_CROP_FILES[activePointIndex]}`}
+            alt={`${currentPoint.name} reference`}
             className="w-full h-full object-cover"
-            style={{ objectPosition: '50% 20%' }}
           />
-
-          {/* Dot overlay - moves with zoom */}
-          <div className="absolute inset-0">
-            {LANDMARK_DOT_POSITIONS.map((pos, index) => {
-              const isActive = index === activePointIndex;
-              const isCompleted = completedPoints.includes(index);
-
-              // Scale down the dot sizes when zoomed to keep them visually consistent
-              const dotScale = 1 / zoomConfig.scale;
-
-              return (
-                <div
-                  key={index}
-                  className="absolute -translate-x-1/2 -translate-y-1/2"
-                  style={{
-                    left: `${pos.x}%`,
-                    top: `${pos.y}%`,
-                    transform: `translate(-50%, -50%) scale(${dotScale})`,
-                  }}
-                >
-                  {/* Completed points - green */}
-                  {isCompleted && !isActive && (
-                    <div className="w-2 h-2 rounded-full bg-green-500 opacity-80" />
-                  )}
-
-                  {/* Inactive points - faint grey */}
-                  {!isCompleted && !isActive && (
-                    <div className="w-2 h-2 rounded-full bg-zinc-600 opacity-40" />
-                  )}
-
-                  {/* Active point - same size as others, just orange */}
-                  {isActive && (
-                    <div className="w-2 h-2 rounded-full bg-amber-400" />
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </div>
+        ) : (
+          <>
+            <button
+              onClick={cycleZoom}
+              className="absolute top-2 right-2 z-10 px-2 py-1 bg-white/80 hover:bg-white border border-zinc-200 rounded text-xs font-medium text-zinc-600 transition-colors flex items-center gap-1"
+            >
+              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+              </svg>
+              {getZoomLabel()}
+            </button>
+            <div
+              className="absolute inset-0 transition-transform duration-300 ease-out"
+              style={{
+                transform: `scale(${zoomConfig.scale})`,
+                transformOrigin: `${zoomConfig.originX} ${zoomConfig.originY}`,
+              }}
+            >
+              <img
+                src="/max.assistant.webp"
+                alt="Face reference"
+                className="w-full h-full object-cover"
+                style={{ objectPosition: '50% 20%' }}
+              />
+              <div className="absolute inset-0">
+                {LANDMARK_DOT_POSITIONS.map((pos, index) => {
+                  const isActive = index === activePointIndex;
+                  const isCompleted = completedPoints.includes(index);
+                  const dotScale = 1 / zoomConfig.scale;
+                  return (
+                    <div
+                      key={index}
+                      className="absolute"
+                      style={{
+                        left: `${pos.x}%`,
+                        top: `${pos.y}%`,
+                        transform: `translate(-50%, -50%) scale(${dotScale})`,
+                      }}
+                    >
+                      {isCompleted && !isActive && <div className="w-2 h-2 rounded-full bg-green-500 opacity-80" />}
+                      {!isCompleted && !isActive && <div className="w-2 h-2 rounded-full bg-zinc-400 opacity-40" />}
+                      {isActive && <div className="w-2.5 h-2.5 rounded-full bg-red-500 ring-2 ring-white" />}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </>
+        )}
       </div>
 
-      {/* Point counter */}
-      <div className="mt-4 text-center">
-        <span className="text-zinc-500 text-xs">
-          Point {activePointIndex + 1} of {LANDMARK_POINTS.length}
-        </span>
-      </div>
+      <p className="text-xs text-zinc-400 mt-2 font-mono">
+        Point {activePointIndex + 1} of {LANDMARK_POINTS.length}
+      </p>
     </div>
   );
 }
