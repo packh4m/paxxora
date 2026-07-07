@@ -11,32 +11,55 @@ const LANDMARK_CROP_FILES: Record<number, string> = {
   0: "hairline.png",
   1: "left pupil.png",
   2: "right pupil.png",
-};
-
-const getZoomConfig = (pointIndex: number): { scale: number; originX: string; originY: string } => {
-  if (pointIndex === 0) return { scale: 2, originX: '50%', originY: '15%' };
-  if (pointIndex === 1) return { scale: 2.5, originX: '40%', originY: '37%' };
-  if (pointIndex === 2) return { scale: 2.5, originX: '60%', originY: '37%' };
-  if (pointIndex >= 3 && pointIndex <= 4) return { scale: 2.2, originX: '50%', originY: '52%' };
-  if (pointIndex === 5) return { scale: 2.2, originX: '50%', originY: '60%' };
-  if (pointIndex === 6) return { scale: 2, originX: '50%', originY: '70%' };
-  if (pointIndex === 7) return { scale: 2.2, originX: '26%', originY: '42%' };
-  if (pointIndex === 8) return { scale: 2.2, originX: '74%', originY: '42%' };
-  if (pointIndex === 9) return { scale: 2, originX: '32%', originY: '28%' };
-  if (pointIndex === 10) return { scale: 2, originX: '68%', originY: '28%' };
-  if ((pointIndex >= 11 && pointIndex <= 15) || pointIndex === 21) return { scale: 2.5, originX: '40%', originY: '37%' };
-  if (pointIndex >= 16 && pointIndex <= 20) return { scale: 2.2, originX: '40%', originY: '32%' };
-  if ((pointIndex >= 22 && pointIndex <= 26) || pointIndex === 32) return { scale: 2.5, originX: '60%', originY: '37%' };
-  if (pointIndex >= 27 && pointIndex <= 31) return { scale: 2.2, originX: '60%', originY: '32%' };
-  if (pointIndex >= 33 && pointIndex <= 36) return { scale: 2.2, originX: '50%', originY: '45%' };
-  if (pointIndex >= 37 && pointIndex <= 41) return { scale: 2.2, originX: '50%', originY: '58%' };
-  if (pointIndex === 42 || pointIndex === 44) return { scale: 2, originX: '32%', originY: '57%' };
-  if (pointIndex === 43 || pointIndex === 45) return { scale: 2, originX: '68%', originY: '57%' };
-  if (pointIndex >= 46 && pointIndex <= 47) return { scale: 2, originX: '50%', originY: '68%' };
-  if (pointIndex >= 48 && pointIndex <= 49) return { scale: 2, originX: '50%', originY: '76%' };
-  if (pointIndex === 50) return { scale: 2, originX: '34%', originY: '45%' };
-  if (pointIndex === 51) return { scale: 2, originX: '66%', originY: '45%' };
-  return { scale: 1, originX: '50%', originY: '50%' };
+  3: "left nostril.png",
+  4: "right nostril.png",
+  5: "bottom lip.png",
+  6: "chin.png",
+  7: "left outer ear.png",
+  8: "right outer ear.png",
+  9: "left temple.png",
+  10: "right temple.png",
+  11: "left inner eye.png",
+  12: "left outer eye.png",
+  13: "left top eyelid.png",
+  14: "left bottom eyelid.png",
+  15: "left eye hood.png",
+  16: "left browhead.png",
+  17: "left brow inner.png",
+  18: "left brow arch.png",
+  19: "left brow peak.png",
+  20: "left brow tail.png",
+  21: "left lid crease.png",
+  22: "right inner eye.png",
+  23: "right outer eye.png",
+  24: "right top eyelid.png",
+  25: "right bottom eyelid.png",
+  26: "right eye hood.png",
+  27: "right browhead.png",
+  28: "right brow inner.png",
+  29: "right brow arch.png",
+  30: "right brow peak.png",
+  31: "right brow tail.png",
+  32: "right lid crease.png",
+  33: "nasal base.png",
+  34: "nose base.png",
+  35: "left nose bridge.png",
+  36: "right nose bridge.png",
+  37: "left mouth corner.png",
+  38: "right mouth corner.png",
+  39: "cupids bow.png",
+  40: "inner cupids bow.png",
+  41: "middle mouth.png",
+  42: "left top jaw.png",
+  43: "right top jaw.png",
+  44: "left middle jaw.png",
+  45: "right middle jaw.png",
+  46: "leftside chin.png",
+  47: "rightside chin.png",
+  48: "left neck.png",
+  49: "right neck.png",
+  50: "left cheekbone.png",
+  51: "right cheekbone.png",
 };
 
 export const LANDMARK_DOT_POSITIONS: { x: number; y: number }[] = [
@@ -116,27 +139,8 @@ export const LANDMARK_POINTS = [
 ];
 
 export default function FaceReferenceImage({ activePointIndex, completedPoints }: FaceReferenceImageProps) {
-  const [extraZoom, setExtraZoom] = useState(1);
   const currentPoint = LANDMARK_POINTS[activePointIndex];
   const hasCrop = activePointIndex in LANDMARK_CROP_FILES;
-  const baseZoomConfig = getZoomConfig(activePointIndex);
-
-  const zoomConfig = {
-    ...baseZoomConfig,
-    scale: baseZoomConfig.scale * extraZoom,
-  };
-
-  const cycleZoom = () => {
-    if (extraZoom === 1) setExtraZoom(1.5);
-    else if (extraZoom === 1.5) setExtraZoom(2);
-    else setExtraZoom(1);
-  };
-
-  const getZoomLabel = () => {
-    if (extraZoom === 1) return "1x";
-    if (extraZoom === 1.5) return "1.5x";
-    return "2x";
-  };
 
   return (
     <div className="flex flex-col items-center">
@@ -153,7 +157,10 @@ export default function FaceReferenceImage({ activePointIndex, completedPoints }
       </div>
 
       {/* Reference image */}
-      <div className="relative bg-zinc-100 rounded-xl overflow-hidden border border-zinc-200" style={{ width: '100%', height: 220 }}>
+      <div
+        className="relative bg-zinc-100 rounded-xl overflow-hidden border border-zinc-200 w-full"
+        style={{ height: 220 }}
+      >
         {hasCrop ? (
           <img
             src={`/landmarks/${LANDMARK_CROP_FILES[activePointIndex]}`}
@@ -161,53 +168,9 @@ export default function FaceReferenceImage({ activePointIndex, completedPoints }
             className="w-full h-full object-cover"
           />
         ) : (
-          <>
-            <button
-              onClick={cycleZoom}
-              className="absolute top-2 right-2 z-10 px-2 py-1 bg-white/80 hover:bg-white border border-zinc-200 rounded text-xs font-medium text-zinc-600 transition-colors flex items-center gap-1"
-            >
-              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
-              </svg>
-              {getZoomLabel()}
-            </button>
-            <div
-              className="absolute inset-0 transition-transform duration-300 ease-out"
-              style={{
-                transform: `scale(${zoomConfig.scale})`,
-                transformOrigin: `${zoomConfig.originX} ${zoomConfig.originY}`,
-              }}
-            >
-              <img
-                src="/max.assistant.webp"
-                alt="Face reference"
-                className="w-full h-full object-cover"
-                style={{ objectPosition: '50% 20%' }}
-              />
-              <div className="absolute inset-0">
-                {LANDMARK_DOT_POSITIONS.map((pos, index) => {
-                  const isActive = index === activePointIndex;
-                  const isCompleted = completedPoints.includes(index);
-                  const dotScale = 1 / zoomConfig.scale;
-                  return (
-                    <div
-                      key={index}
-                      className="absolute"
-                      style={{
-                        left: `${pos.x}%`,
-                        top: `${pos.y}%`,
-                        transform: `translate(-50%, -50%) scale(${dotScale})`,
-                      }}
-                    >
-                      {isCompleted && !isActive && <div className="w-2 h-2 rounded-full bg-green-500 opacity-80" />}
-                      {!isCompleted && !isActive && <div className="w-2 h-2 rounded-full bg-zinc-400 opacity-40" />}
-                      {isActive && <div className="w-2.5 h-2.5 rounded-full bg-red-500 ring-2 ring-white" />}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </>
+          <div className="w-full h-full flex items-center justify-center">
+            <p className="text-xs text-zinc-400">No reference image</p>
+          </div>
         )}
       </div>
 
