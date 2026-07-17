@@ -292,3 +292,98 @@ export default function ResultsDisplay({ result, onReset }: ResultsDisplayProps)
                   <p className="text-xs font-mono uppercase tracking-widest text-zinc-400">{category}</p>
                 </div>
                 {metrics.map(metric => (
+                  metric.score !== null && (
+                    <MetricRow
+                      key={metric.definition.id}
+                      name={metric.definition.name}
+                      value={metric.value !== null ? metric.definition.formatValue?.(metric.value) ?? String(metric.value.toFixed(2)) : undefined}
+                      score={metric.score}
+                      onClick={() => handleMetricClick(metric.definition.id)}
+                    />
+                  )
+                ))}
+              </div>
+            ))}
+
+            {activeTab === "features" && featuresMetrics.map(({ category, metrics }) => (
+              <div key={category}>
+                <div className="px-4 py-2 bg-zinc-50 border-b border-zinc-100">
+                  <p className="text-xs font-mono uppercase tracking-widest text-zinc-400">{category}</p>
+                </div>
+                {metrics.map(metric => (
+                  metric.score !== null && (
+                    <MetricRow
+                      key={metric.definition.id}
+                      name={metric.definition.name}
+                      value={metric.value !== null ? metric.definition.formatValue?.(metric.value) ?? String(metric.value.toFixed(2)) : undefined}
+                      score={metric.score}
+                      onClick={() => handleMetricClick(metric.definition.id)}
+                    />
+                  )
+                ))}
+              </div>
+            ))}
+
+            {activeTab === "angularity" && (
+              <div>
+                {Object.entries(angularitySubScores).map(([name, score]) => (
+                  <SubMetricRow key={name} name={name} score={score} />
+                ))}
+              </div>
+            )}
+
+            {activeTab === "dimorphism" && (
+              <div>
+                {Object.entries(dimorphismSubScores).map(([name, score]) => (
+                  <SubMetricRow key={name} name={name} score={score} />
+                ))}
+              </div>
+            )}
+
+            {activeTab === "vision" && result.visionScores && (
+              <div>
+                {(Object.keys(VISION_METRIC_LABELS) as Array<keyof typeof VISION_METRIC_LABELS>).map(key => (
+                  <SubMetricRow
+                    key={key}
+                    name={VISION_METRIC_LABELS[key]}
+                    score={result.visionScores![key]}
+                  />
+                ))}
+                {result.visionScores.reasoning && (
+                  <div className="p-5 border-t border-zinc-100">
+                    <p className="text-xs text-zinc-400 mb-2">AI Analysis</p>
+                    <p className="text-sm text-zinc-600 leading-relaxed">{result.visionScores.reasoning}</p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {activeTab === "vision" && !result.visionScores && !result.visionError && (
+              <div className="flex items-center gap-3 p-6">
+                <svg className="w-5 h-5 text-zinc-400 animate-spin" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
+                </svg>
+                <p className="text-sm text-zinc-500">Analyzing facial features...</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {selectedMetricIndex !== null && result.landmarks && result.imageWidth && result.imageHeight && (
+        <MetricDetailModal
+          metric={result.metrics[selectedMetricIndex]}
+          metrics={result.metrics}
+          currentIndex={selectedMetricIndex}
+          imageUrl={result.imageUrl}
+          landmarks={result.landmarks}
+          imageWidth={result.imageWidth}
+          imageHeight={result.imageHeight}
+          onClose={() => setSelectedMetricIndex(null)}
+          onNavigate={(index) => setSelectedMetricIndex(index)}
+        />
+      )}
+    </div>
+  );
+}
