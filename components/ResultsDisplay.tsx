@@ -296,7 +296,7 @@ export default function ResultsDisplay({ result, onReset }: ResultsDisplayProps)
                     <MetricRow
                       key={metric.definition.id}
                       name={metric.definition.name}
-                      value={metric.value !== null ? metric.definition.formatValue?.(metric.value) ?? String(metric.value.toFixed(2)) : undefined}
+                      value={metric.value !== null ? String(metric.value.toFixed(2)) : undefined}
                       score={metric.score}
                       onClick={() => handleMetricClick(metric.definition.id)}
                     />
@@ -315,7 +315,7 @@ export default function ResultsDisplay({ result, onReset }: ResultsDisplayProps)
                     <MetricRow
                       key={metric.definition.id}
                       name={metric.definition.name}
-                      value={metric.value !== null ? metric.definition.formatValue?.(metric.value) ?? String(metric.value.toFixed(2)) : undefined}
+                      value={metric.value !== null ? String(metric.value.toFixed(2)) : undefined}
                       score={metric.score}
                       onClick={() => handleMetricClick(metric.definition.id)}
                     />
