@@ -7,21 +7,26 @@ Be honest and accurate — do not be overly generous. An average face should sco
 
 Score each category from 0.0 to 10.0 with one decimal place:
 
-1. JAW_DEFINITION: Sharpness and definition of the jawline. 10 = razor sharp defined jaw with clear mandibular line. 5 = average definition. 1 = completely soft/undefined jaw blending into neck.
-
-2. CHEEKBONE_PROMINENCE: How prominent and projected the cheekbones are. 10 = extremely prominent high cheekbones with clear zygomatic projection. 5 = average cheekbones. 1 = flat face with no cheekbone definition.
-
-3. SKIN_QUALITY: Clarity, smoothness, and overall skin health. 10 = perfect clear skin. 5 = average with minor blemishes. 1 = severe acne/scarring/poor texture.
-
-4. SEXUAL_DIMORPHISM: How masculine this face appears (for males) or feminine (for females). For males: 10 = extremely masculine strong features. 5 = average masculine. 1 = very feminine features on a male face. Assess the gender presented.
-
-5. FACIAL_FAT: How lean the face appears. 10 = extremely lean, no excess fat, sharp features. 5 = average. 1 = very chubby/round face with significant fat obscuring structure.
-
-6. OVERALL_HARMONY: How well all features work together as a complete face. 10 = perfect harmony, every feature complements the others. 5 = some features work together. 1 = features clash, face looks disjointed.
-
-7. EYE_APPEAL: Overall attractiveness and impact of the eyes including shape, spacing, tilt, expression. 10 = extremely attractive compelling eyes. 5 = average eyes. 1 = very unappealing eyes.
-
-8. OVERALL_IMPRESSION: Your overall aesthetic impression of this face ignoring hairstyle and grooming. Pure bone structure and facial features only. 10 = top 1% attractive. 5 = average. 1 = bottom 5%.
+1. JAW_DEFINITION: Sharpness and definition of the jawline. 10 = razor sharp defined jaw. 5 = average. 1 = soft/undefined.
+2. CHEEKBONE_PROMINENCE: How prominent the cheekbones are. 10 = extremely prominent. 5 = average. 1 = flat with no definition.
+3. SKIN_QUALITY: Clarity and smoothness. 10 = perfect skin. 5 = average. 1 = severe issues.
+4. SEXUAL_DIMORPHISM: Overall masculine score. 10 = extremely masculine. 5 = average. 1 = very feminine.
+5. FACIAL_FAT: How lean the face appears. 10 = extremely lean. 5 = average. 1 = very chubby.
+6. OVERALL_HARMONY: How well all features work together. 10 = perfect harmony. 5 = some harmony. 1 = disjointed.
+7. EYE_APPEAL: Attractiveness of the eyes. 10 = extremely attractive. 5 = average. 1 = unappealing.
+8. OVERALL_IMPRESSION: Overall aesthetic impression, bone structure only. 10 = top 1%. 5 = average. 1 = bottom 5%.
+9. FACIAL_HAIR: Facial hair visibility and masculinity contribution. 10 = full thick beard. 5 = moderate stubble. 0 = clean shaven.
+10. NECK: Neck thickness and definition. 10 = thick muscular neck. 5 = average. 1 = very thin/undefined.
+11. EYEBROW_THICKNESS: Thickness and density of eyebrows. 10 = very thick dense brows. 5 = average. 1 = very thin/sparse.
+12. NOSE_MASCULINITY: How masculine the nose appears. 10 = strong wide masculine nose. 5 = average. 1 = very small/feminine.
+13. BROW_RIDGE: Prominence of the brow ridge. 10 = very prominent heavy brow ridge. 5 = average. 1 = completely flat.
+14. HAIRLINE: How masculine and well-defined the hairline is. 10 = strong defined masculine hairline. 5 = average. 1 = receding/undefined.
+15. EYES_DIMORPHISM: How masculine the eyes appear. 10 = very masculine hunter eyes. 5 = average. 1 = very round/feminine.
+16. LIP_MASCULINITY: How masculine the lips appear. 10 = thin masculine lips. 5 = average. 1 = very full/feminine.
+17. FACE_SHAPE_DIMORPHISM: How masculine the face shape is. 10 = very square/angular. 5 = average. 1 = very round/oval.
+18. JAW_DIMORPHISM: How masculine the jaw specifically is. 10 = very wide square jaw. 5 = average. 1 = very narrow/weak.
+19. HAIR_LENGTH: How masculine the hair length appears. 10 = very short masculine cut. 5 = average. 1 = very long feminine.
+20. HARMONY_DIMORPHISM: How harmoniously masculine features work together. 10 = perfect masculine harmony. 5 = some harmony. 1 = clash.
 
 Respond ONLY with a JSON object in exactly this format, no other text:
 {
@@ -33,87 +38,60 @@ Respond ONLY with a JSON object in exactly this format, no other text:
   "overall_harmony": 7.3,
   "eye_appeal": 8.0,
   "overall_impression": 7.4,
+  "facial_hair": 3.0,
+  "neck": 6.0,
+  "eyebrow_thickness": 6.5,
+  "nose_masculinity": 6.5,
+  "brow_ridge": 7.0,
+  "hairline": 7.5,
+  "eyes_dimorphism": 7.8,
+  "lip_masculinity": 8.0,
+  "face_shape_dimorphism": 8.5,
+  "jaw_dimorphism": 9.2,
+  "hair_length": 9.5,
+  "harmony_dimorphism": 7.0,
   "reasoning": "Brief 2 sentence explanation of key strengths and weaknesses"
 }`;
 
 export async function POST(request: Request) {
   try {
     const apiKey = process.env.ANTHROPIC_API_KEY;
+    if (!apiKey) return NextResponse.json({ error: "ANTHROPIC_API_KEY not configured" }, { status: 500 });
 
-    if (!apiKey) {
-      return NextResponse.json(
-        { error: "ANTHROPIC_API_KEY not configured" },
-        { status: 500 }
-      );
-    }
-
-    const client = new Anthropic({
-      apiKey: apiKey,
-    });
-
+    const client = new Anthropic({ apiKey });
     const { imageBase64, imageMediaType } = await request.json();
 
     if (!imageBase64 || !imageMediaType) {
-      return NextResponse.json(
-        { error: "Missing imageBase64 or imageMediaType" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Missing imageBase64 or imageMediaType" }, { status: 400 });
     }
 
     const response = await client.messages.create({
       model: "claude-sonnet-4-6",
       max_tokens: 1000,
-      messages: [
-        {
-          role: "user",
-          content: [
-            {
-              type: "image",
-              source: {
-                type: "base64",
-                media_type: imageMediaType,
-                data: imageBase64,
-              },
-            },
-            {
-              type: "text",
-              text: VISION_PROMPT,
-            },
-          ],
-        },
-      ],
+      messages: [{
+        role: "user",
+        content: [
+          { type: "image", source: { type: "base64", media_type: imageMediaType, data: imageBase64 } },
+          { type: "text", text: VISION_PROMPT },
+        ],
+      }],
     });
 
-    // Extract text content from response
-    const textContent = response.content.find((block) => block.type === "text");
+    const textContent = response.content.find(b => b.type === "text");
     if (!textContent || textContent.type !== "text") {
-      return NextResponse.json(
-        { error: "No text response from Claude" },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: "No text response from Claude" }, { status: 500 });
     }
 
-    // Parse the JSON response
     try {
       const result = JSON.parse(textContent.text);
       return NextResponse.json({ result });
     } catch {
-      // If JSON parsing fails, try to extract JSON from the response
       const jsonMatch = textContent.text.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        const result = JSON.parse(jsonMatch[0]);
-        return NextResponse.json({ result });
-      }
-      return NextResponse.json(
-        { error: "Failed to parse Claude response as JSON", raw: textContent.text },
-        { status: 500 }
-      );
+      if (jsonMatch) return NextResponse.json({ result: JSON.parse(jsonMatch[0]) });
+      return NextResponse.json({ error: "Failed to parse response", raw: textContent.text }, { status: 500 });
     }
   } catch (error) {
     console.error("Vision score API error:", error);
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Unknown error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: error instanceof Error ? error.message : "Unknown error" }, { status: 500 });
   }
 }
