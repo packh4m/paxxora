@@ -129,7 +129,7 @@ export default function ResultsDisplay({ result, onReset }: ResultsDisplayProps)
   const dimorphismVisionKeys: Array<keyof typeof VISION_METRIC_LABELS> = [
     "facial_hair", "neck", "eyebrow_thickness", "nose_masculinity",
     "brow_ridge", "hairline", "eyes_dimorphism", "lip_masculinity",
-    "face_shape_dimorphism", "jaw_dimorphism", "hair_length", "harmony_dimorphism",
+    "face_shape_dimorphism", "jaw_dimorphism", "hair_length",
   ];
 
   const handleMetricClick = (metricId: string) => {
@@ -169,7 +169,6 @@ export default function ResultsDisplay({ result, onReset }: ResultsDisplayProps)
       </header>
 
       <div className="flex flex-1 overflow-hidden max-w-7xl mx-auto w-full p-4 gap-4">
-        {/* Left panel */}
         <div className="w-96 flex-shrink-0 flex flex-col overflow-hidden rounded-2xl bg-white border border-zinc-200 shadow-sm">
           <div className="flex-shrink-0 px-5 py-4 border-b border-zinc-100 flex items-center justify-between">
             <div>
@@ -203,7 +202,6 @@ export default function ResultsDisplay({ result, onReset }: ResultsDisplayProps)
           </div>
         </div>
 
-        {/* Right panel */}
         <div className="flex-1 flex flex-col overflow-hidden rounded-2xl bg-white border border-zinc-200 shadow-sm">
           <div className="flex-shrink-0 px-6 py-3 border-b border-zinc-100">
             <p className="text-sm font-semibold text-black">Your {tabs.find(t => t.id === activeTab)?.label} Ratios</p>
@@ -247,7 +245,6 @@ export default function ResultsDisplay({ result, onReset }: ResultsDisplayProps)
                 {Object.entries(dimorphismSubScores).map(([name, score]) => (
                   <SubMetricRow key={name} name={name} score={score} />
                 ))}
-
                 {result.visionScores ? (
                   <>
                     <SectionHeader label="AI Vision" />
