@@ -1,4 +1,4 @@
-"use client";
+\"use client";
 
 import { useState, useCallback } from "react";
 import PhotoUpload from "@/components/PhotoUpload";
@@ -6,7 +6,6 @@ import ResultsDisplay from "@/components/ResultsDisplay";
 import DebugOverlay from "@/components/DebugOverlay";
 import ManualPointPlacement from "@/components/ManualPointPlacement";
 import { AnalysisResult, Point, VisionScores } from "@/lib/types";
-import { runScoringTest, testDeviationScoring, testModelPhoto, testBelowAverage } from "@/lib/testScoring";
 import { calculateAllMetrics } from "@/lib/metrics";
 import { calculateOverallScore } from "@/lib/scoring";
 import Link from "next/link";
@@ -14,16 +13,36 @@ import Link from "next/link";
 async function imageUrlToBase64(url: string): Promise<{ base64: string; mediaType: string }> {
   const response = await fetch(url);
   const blob = await response.blob();
-  const mediaType = blob.type || "image/jpeg";
+  const mediaType = "image/jpeg";
+
   return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const dataUrl = reader.result as string;
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      const maxSize = 1024;
+      let width = img.width;
+      let height = img.height;
+
+      if (width > maxSize || height > maxSize) {
+        if (width > height) {
+          height = Math.round((height * maxSize) / width);
+          width = maxSize;
+        } else {
+          width = Math.round((width * maxSize) / height);
+          height = maxSize;
+        }
+      }
+
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d");
+      ctx?.drawImage(img, 0, 0, width, height);
+      const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
       const base64 = dataUrl.split(",")[1];
       resolve({ base64, mediaType });
     };
-    reader.onerror = reject;
-    reader.readAsDataURL(blob);
+    img.onerror = reject;
+    img.src = URL.createObjectURL(blob);
   });
 }
 
@@ -180,7 +199,6 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-[#f7f7f5] flex flex-col">
-      {/* Header */}
       <header className="flex items-center justify-between px-8 py-6 border-b border-zinc-200">
         <Link href="/dashboard" className="text-lg font-semibold text-black tracking-tight">
           Paxxora
@@ -190,10 +208,8 @@ export default function Home() {
         </Link>
       </header>
 
-      {/* Main */}
       <main className="flex-1 flex flex-col items-center justify-center px-4 py-12">
         <div className="w-full max-w-xl">
-
           <div className="text-center mb-10">
             <p className="text-xs font-mono uppercase tracking-widest text-zinc-400 mb-4">
               Step 1 of 2
@@ -206,24 +222,17 @@ export default function Home() {
             </p>
           </div>
 
-          <PhotoUpload
-            onImageSelect={handleImageSelect}
-            isAnalyzing={false}
-          />
+          <PhotoUpload onImageSelect={handleImageSelect} isAnalyzing={false} />
 
           {error && (
             <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-xl">
               <p className="text-red-500 text-sm text-center">{error}</p>
-              <button
-                onClick={handleReset}
-                className="mt-3 w-full py-2 text-sm text-red-400 hover:text-red-500 transition-colors"
-              >
+              <button onClick={handleReset} className="mt-3 w-full py-2 text-sm text-red-400 hover:text-red-500 transition-colors">
                 Try Again
               </button>
             </div>
           )}
 
-          {/* Stats */}
           <div className="mt-10 grid grid-cols-3 gap-4 text-center">
             {[
               { value: "33", label: "Facial Metrics" },
@@ -237,7 +246,6 @@ export default function Home() {
             ))}
           </div>
 
-          {/* How it works */}
           <div className="mt-6 p-6 bg-white rounded-xl border border-zinc-200">
             <h3 className="text-xs font-mono uppercase tracking-widest text-zinc-400 mb-4">How it works</h3>
             <div className="space-y-3">
@@ -255,7 +263,6 @@ export default function Home() {
               ))}
             </div>
           </div>
-
         </div>
       </main>
 
