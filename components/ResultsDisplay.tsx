@@ -1,4 +1,4 @@
-"use client";
+p"use client";
 
 import { useState, useMemo } from "react";
 import { AnalysisResult, MetricCategory, MetricResult, VISION_METRIC_LABELS } from "@/lib/types";
