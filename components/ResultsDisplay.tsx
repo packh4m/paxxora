@@ -17,7 +17,6 @@ const FEATURES_CATEGORIES: MetricCategory[] = ["Nose", "Jaw", "Lips", "Brows", "
 
 type Tab = "harmony" | "features" | "angularity" | "dimorphism" | "vision";
 
-// Gradient bar like FaceIQ
 function GradientBar({ score }: { score: number }) {
   const pct = (score / 10) * 100;
   return (
@@ -32,18 +31,7 @@ function GradientBar({ score }: { score: number }) {
   );
 }
 
-// Metric row with gradient bar
-function MetricRow({
-  name,
-  value,
-  score,
-  onClick,
-}: {
-  name: string;
-  value?: string;
-  score: number;
-  onClick?: () => void;
-}) {
+function MetricRow({ name, value, score, onClick }: { name: string; value?: string; score: number; onClick?: () => void }) {
   const color = getScoreColor(score);
   return (
     <button
@@ -59,7 +47,7 @@ function MetricRow({
       <div className="w-32 flex-shrink-0">
         <GradientBar score={score} />
       </div>
-      <span className="text-sm font-semibold w-8 text-right flex-shrink-0" style={{ color }}>
+      <span className="text-sm font-semibold w-10 text-right flex-shrink-0" style={{ color }}>
         {score.toFixed(2)}
       </span>
       <svg className="w-4 h-4 text-zinc-300 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -69,7 +57,6 @@ function MetricRow({
   );
 }
 
-// Sub score row for angularity/dimorphism
 function SubMetricRow({ name, score }: { name: string; score: number }) {
   const color = getScoreColor(score);
   return (
@@ -78,7 +65,7 @@ function SubMetricRow({ name, score }: { name: string; score: number }) {
       <div className="w-32 flex-shrink-0">
         <GradientBar score={score} />
       </div>
-      <span className="text-sm font-semibold w-8 text-right flex-shrink-0" style={{ color }}>
+      <span className="text-sm font-semibold w-10 text-right flex-shrink-0" style={{ color }}>
         {score.toFixed(2)}
       </span>
     </div>
@@ -163,33 +150,30 @@ export default function ResultsDisplay({ result, onReset }: ResultsDisplayProps)
   const activeScore = tabs.find(t => t.id === activeTab)?.score ?? 0;
 
   return (
-    <div className="min-h-screen bg-[#f7f7f5] flex flex-col">
+    <div className="flex flex-col" style={{ height: "100vh", overflow: "hidden" }}>
       {/* Header */}
-      <header className="sticky top-0 z-10 bg-white border-b border-zinc-200">
+      <header className="flex-shrink-0 bg-white border-b border-zinc-200 z-10">
         <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
           <Link href="/dashboard" className="text-lg font-semibold text-black tracking-tight">
             Paxxora
           </Link>
-          <div className="flex items-center gap-4">
-            {/* Tab nav in header like FaceIQ */}
-            <div className="hidden md:flex items-center gap-1">
-              {tabs.map(tab => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
-                    activeTab === tab.id
-                      ? "border-black text-black"
-                      : "border-transparent text-zinc-400 hover:text-black"
-                  }`}
-                >
-                  {tab.label}
-                </button>
-              ))}
-            </div>
+          <div className="flex items-center gap-1">
+            {tabs.map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+                  activeTab === tab.id
+                    ? "border-black text-black"
+                    : "border-transparent text-zinc-400 hover:text-black"
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
             <button
               onClick={onReset}
-              className="text-sm text-zinc-500 hover:text-black transition-colors"
+              className="ml-4 text-sm text-zinc-400 hover:text-black transition-colors"
             >
               New Analysis
             </button>
@@ -197,31 +181,31 @@ export default function ResultsDisplay({ result, onReset }: ResultsDisplayProps)
         </div>
       </header>
 
-      <div className="flex-1 flex max-w-7xl mx-auto w-full">
-        {/* Left — photo */}
-        <div className="w-[420px] flex-shrink-0 border-r border-zinc-200 bg-white flex flex-col">
-          {/* Score header above photo */}
-          <div className="px-5 py-4 border-b border-zinc-100 flex items-center justify-between">
+      {/* Body */}
+      <div className="flex flex-1 overflow-hidden max-w-7xl mx-auto w-full">
+
+        {/* Left — photo (does not scroll) */}
+        <div className="w-96 flex-shrink-0 border-r border-zinc-200 bg-white flex flex-col overflow-hidden">
+          {/* Score header */}
+          <div className="flex-shrink-0 px-5 py-4 border-b border-zinc-100 flex items-center justify-between">
             <div>
-              <p className="text-xs text-zinc-400 mb-0.5">Overall Score</p>
+              <p className="text-xs text-zinc-400 mb-0.5">Overall</p>
               <p className="text-2xl font-semibold" style={{ color: getScoreColor(finalScore) }}>
-                {finalScore.toFixed(2)}
-                <span className="text-sm text-zinc-400 font-normal ml-1">/10</span>
+                {finalScore.toFixed(2)}<span className="text-sm text-zinc-400 font-normal ml-1">/10</span>
               </p>
               <p className="text-xs text-zinc-500">{getScoreLabel(finalScore)}</p>
             </div>
             <div className="text-right">
               <p className="text-xs text-zinc-400 mb-0.5">{tabs.find(t => t.id === activeTab)?.label}</p>
               <p className="text-2xl font-semibold" style={{ color: getScoreColor(activeScore) }}>
-                {activeScore.toFixed(2)}
-                <span className="text-sm text-zinc-400 font-normal ml-1">/10</span>
+                {activeScore.toFixed(2)}<span className="text-sm text-zinc-400 font-normal ml-1">/10</span>
               </p>
               <p className="text-xs text-zinc-500">{getScoreLabel(activeScore)}</p>
             </div>
           </div>
 
           {/* Photo */}
-          <div className="flex-1 relative p-4">
+          <div className="flex-1 relative p-4 overflow-hidden">
             <button
               onClick={() => setShowLandmarks(!showLandmarks)}
               className={`absolute top-6 right-6 z-10 px-3 py-1.5 text-xs font-medium rounded-full border transition-colors ${
@@ -244,48 +228,20 @@ export default function ResultsDisplay({ result, onReset }: ResultsDisplayProps)
                 src={result.imageUrl}
                 alt="Analyzed photo"
                 className="w-full h-full object-contain rounded-xl"
-                style={{ maxHeight: "calc(100vh - 200px)" }}
               />
             )}
           </div>
         </div>
 
-        {/* Right — metrics */}
-        <div className="flex-1 flex flex-col overflow-hidden">
-          {/* Section header */}
-          <div className="px-6 py-4 border-b border-zinc-200 bg-white flex items-center justify-between">
-            <div>
-              <p className="text-sm font-semibold text-black">
-                Your {tabs.find(t => t.id === activeTab)?.label} Ratios
-              </p>
-              <p className="text-xs text-zinc-400 mt-0.5">
-                {activeTab === "harmony" && "Facial proportions and symmetry"}
-                {activeTab === "features" && "Individual facial feature quality"}
-                {activeTab === "angularity" && "Facial definition and sharpness"}
-                {activeTab === "dimorphism" && "Sexual dimorphism indicators"}
-                {activeTab === "vision" && "AI subjective assessment"}
-              </p>
-            </div>
-            {/* Mobile tabs */}
-            <div className="flex md:hidden gap-1 overflow-x-auto">
-              {tabs.map(tab => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`px-3 py-1.5 text-xs font-medium rounded-full whitespace-nowrap border transition-colors ${
-                    activeTab === tab.id
-                      ? "bg-black text-white border-black"
-                      : "text-zinc-500 border-zinc-200"
-                  }`}
-                >
-                  {tab.label}
-                </button>
-              ))}
-            </div>
+        {/* Right — scrollable metrics */}
+        <div className="flex-1 flex flex-col overflow-hidden bg-white">
+          <div className="flex-shrink-0 px-6 py-3 border-b border-zinc-100">
+            <p className="text-sm font-medium text-black">
+              Your {tabs.find(t => t.id === activeTab)?.label} Ratios
+            </p>
           </div>
 
-          {/* Metric list */}
-          <div className="flex-1 overflow-y-auto bg-white">
+          <div className="flex-1 overflow-y-auto">
             {activeTab === "harmony" && harmonyMetrics.map(({ category, metrics }) => (
               <div key={category}>
                 <div className="px-4 py-2 bg-zinc-50 border-b border-zinc-100">
@@ -324,30 +280,18 @@ export default function ResultsDisplay({ result, onReset }: ResultsDisplayProps)
               </div>
             ))}
 
-            {activeTab === "angularity" && (
-              <div>
-                {Object.entries(angularitySubScores).map(([name, score]) => (
-                  <SubMetricRow key={name} name={name} score={score} />
-                ))}
-              </div>
-            )}
+            {activeTab === "angularity" && Object.entries(angularitySubScores).map(([name, score]) => (
+              <SubMetricRow key={name} name={name} score={score} />
+            ))}
 
-            {activeTab === "dimorphism" && (
-              <div>
-                {Object.entries(dimorphismSubScores).map(([name, score]) => (
-                  <SubMetricRow key={name} name={name} score={score} />
-                ))}
-              </div>
-            )}
+            {activeTab === "dimorphism" && Object.entries(dimorphismSubScores).map(([name, score]) => (
+              <SubMetricRow key={name} name={name} score={score} />
+            ))}
 
             {activeTab === "vision" && result.visionScores && (
               <div>
                 {(Object.keys(VISION_METRIC_LABELS) as Array<keyof typeof VISION_METRIC_LABELS>).map(key => (
-                  <SubMetricRow
-                    key={key}
-                    name={VISION_METRIC_LABELS[key]}
-                    score={result.visionScores![key]}
-                  />
+                  <SubMetricRow key={key} name={VISION_METRIC_LABELS[key]} score={result.visionScores![key]} />
                 ))}
                 {result.visionScores.reasoning && (
                   <div className="p-5 border-t border-zinc-100">
