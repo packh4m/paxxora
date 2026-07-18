@@ -24,7 +24,7 @@ function GradientBar({ score }: { score: number }) {
       background: "linear-gradient(to right, #ef4444, #f97316, #eab308, #22c55e, #22c55e, #eab308, #f97316, #ef4444)"
     }}>
       <div
-        className="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-white border-2 border-zinc-400 rounded-full shadow"
+        className="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-white border-2 border-white/80 rounded-full shadow-md"
         style={{ left: `calc(${pct}% - 6px)` }}
       />
     </div>
@@ -36,15 +36,15 @@ function MetricRow({ name, value, score, onClick }: { name: string; value?: stri
   return (
     <button
       onClick={onClick}
-      className="w-full flex items-center gap-4 py-3 px-4 hover:bg-zinc-50 transition-colors border-b border-zinc-100 last:border-0 text-left"
+      className="w-full flex items-center gap-4 py-3 px-4 text-left transition-all hover:bg-white/40 border-b border-white/20 last:border-0"
     >
       <div className="flex-1 min-w-0">
-        <p className="text-sm text-zinc-800 truncate">{name}</p>
+        <p className="text-sm text-zinc-700 truncate">{name}</p>
         {value && (
-          <span className="text-xs text-zinc-400 bg-zinc-100 px-1.5 py-0.5 rounded mt-0.5 inline-block">{value}</span>
+          <span className="text-xs text-zinc-400 bg-white/50 backdrop-blur-sm px-1.5 py-0.5 rounded mt-0.5 inline-block border border-white/30">{value}</span>
         )}
       </div>
-      <div className="w-32 flex-shrink-0">
+      <div className="w-28 flex-shrink-0">
         <GradientBar score={score} />
       </div>
       <span className="text-sm font-semibold w-10 text-right flex-shrink-0" style={{ color }}>
@@ -60,9 +60,9 @@ function MetricRow({ name, value, score, onClick }: { name: string; value?: stri
 function SubMetricRow({ name, score }: { name: string; score: number }) {
   const color = getScoreColor(score);
   return (
-    <div className="flex items-center gap-4 py-3 px-4 border-b border-zinc-100 last:border-0">
-      <span className="text-sm text-zinc-800 flex-1">{name}</span>
-      <div className="w-32 flex-shrink-0">
+    <div className="flex items-center gap-4 py-3 px-4 border-b border-white/20 last:border-0">
+      <span className="text-sm text-zinc-700 flex-1">{name}</span>
+      <div className="w-28 flex-shrink-0">
         <GradientBar score={score} />
       </div>
       <span className="text-sm font-semibold w-10 text-right flex-shrink-0" style={{ color }}>
@@ -150,30 +150,47 @@ export default function ResultsDisplay({ result, onReset }: ResultsDisplayProps)
   const activeScore = tabs.find(t => t.id === activeTab)?.score ?? 0;
 
   return (
-    <div className="flex flex-col" style={{ height: "100vh", overflow: "hidden" }}>
-      {/* Header */}
-      <header className="flex-shrink-0 bg-white border-b border-zinc-200 z-10">
+    <div className="flex flex-col" style={{
+      height: "100vh",
+      overflow: "hidden",
+      background: "linear-gradient(135deg, #e8edf5 0%, #f0e8f5 30%, #e8f0f5 60%, #f5ede8 100%)",
+    }}>
+      {/* Liquid glass header */}
+      <header className="flex-shrink-0 border-b z-10" style={{
+        background: "rgba(255,255,255,0.55)",
+        backdropFilter: "blur(24px)",
+        WebkitBackdropFilter: "blur(24px)",
+        borderColor: "rgba(255,255,255,0.5)",
+        boxShadow: "0 1px 0 rgba(255,255,255,0.8) inset, 0 1px 12px rgba(0,0,0,0.06)",
+      }}>
         <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
-          <Link href="/dashboard" className="text-lg font-semibold text-black tracking-tight">
+          <Link href="/dashboard" className="text-lg font-semibold text-zinc-800 tracking-tight">
             Paxxora
           </Link>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-0.5">
             {tabs.map(tab => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
-                  activeTab === tab.id
-                    ? "border-black text-black"
-                    : "border-transparent text-zinc-400 hover:text-black"
-                }`}
+                className="relative px-4 py-1.5 text-sm font-medium rounded-full transition-all"
+                style={activeTab === tab.id ? {
+                  background: "rgba(255,255,255,0.75)",
+                  backdropFilter: "blur(12px)",
+                  WebkitBackdropFilter: "blur(12px)",
+                  boxShadow: "0 1px 0 rgba(255,255,255,0.9) inset, 0 2px 8px rgba(0,0,0,0.08)",
+                  color: "#1a1a1a",
+                  border: "1px solid rgba(255,255,255,0.6)",
+                } : {
+                  color: "#6b7280",
+                  border: "1px solid transparent",
+                }}
               >
                 {tab.label}
               </button>
             ))}
             <button
               onClick={onReset}
-              className="ml-4 text-sm text-zinc-400 hover:text-black transition-colors"
+              className="ml-3 px-3 py-1.5 text-sm text-zinc-400 hover:text-zinc-700 transition-colors"
             >
               New Analysis
             </button>
@@ -182,37 +199,49 @@ export default function ResultsDisplay({ result, onReset }: ResultsDisplayProps)
       </header>
 
       {/* Body */}
-      <div className="flex flex-1 overflow-hidden max-w-7xl mx-auto w-full">
+      <div className="flex flex-1 overflow-hidden max-w-7xl mx-auto w-full p-4 gap-4">
 
-        {/* Left — photo (does not scroll) */}
-        <div className="w-96 flex-shrink-0 border-r border-zinc-200 bg-white flex flex-col overflow-hidden">
+        {/* Left — photo panel (liquid glass) */}
+        <div className="w-96 flex-shrink-0 flex flex-col overflow-hidden rounded-2xl" style={{
+          background: "rgba(255,255,255,0.45)",
+          backdropFilter: "blur(32px)",
+          WebkitBackdropFilter: "blur(32px)",
+          border: "1px solid rgba(255,255,255,0.65)",
+          boxShadow: "0 2px 0 rgba(255,255,255,0.8) inset, 0 8px 32px rgba(0,0,0,0.08), 0 1px 0 rgba(0,0,0,0.04)",
+        }}>
           {/* Score header */}
-          <div className="flex-shrink-0 px-5 py-4 border-b border-zinc-100 flex items-center justify-between">
+          <div className="flex-shrink-0 px-5 py-4 flex items-center justify-between" style={{
+            borderBottom: "1px solid rgba(255,255,255,0.5)",
+          }}>
             <div>
-              <p className="text-xs text-zinc-400 mb-0.5">Overall</p>
+              <p className="text-xs text-zinc-400 mb-0.5 font-medium">Overall</p>
               <p className="text-2xl font-semibold" style={{ color: getScoreColor(finalScore) }}>
                 {finalScore.toFixed(2)}<span className="text-sm text-zinc-400 font-normal ml-1">/10</span>
               </p>
-              <p className="text-xs text-zinc-500">{getScoreLabel(finalScore)}</p>
+              <p className="text-xs text-zinc-400">{getScoreLabel(finalScore)}</p>
             </div>
             <div className="text-right">
-              <p className="text-xs text-zinc-400 mb-0.5">{tabs.find(t => t.id === activeTab)?.label}</p>
+              <p className="text-xs text-zinc-400 mb-0.5 font-medium">{tabs.find(t => t.id === activeTab)?.label}</p>
               <p className="text-2xl font-semibold" style={{ color: getScoreColor(activeScore) }}>
                 {activeScore.toFixed(2)}<span className="text-sm text-zinc-400 font-normal ml-1">/10</span>
               </p>
-              <p className="text-xs text-zinc-500">{getScoreLabel(activeScore)}</p>
+              <p className="text-xs text-zinc-400">{getScoreLabel(activeScore)}</p>
             </div>
           </div>
 
           {/* Photo */}
-          <div className="flex-1 relative p-4 overflow-hidden">
+          <div className="flex-1 relative p-3 overflow-hidden">
             <button
               onClick={() => setShowLandmarks(!showLandmarks)}
-              className={`absolute top-6 right-6 z-10 px-3 py-1.5 text-xs font-medium rounded-full border transition-colors ${
-                showLandmarks
-                  ? "bg-black text-white border-black"
-                  : "bg-white/80 text-zinc-500 border-zinc-200 hover:border-zinc-400"
-              }`}
+              className="absolute top-5 right-5 z-10 px-3 py-1.5 text-xs font-medium rounded-full transition-all"
+              style={{
+                background: showLandmarks ? "rgba(0,0,0,0.75)" : "rgba(255,255,255,0.65)",
+                backdropFilter: "blur(12px)",
+                WebkitBackdropFilter: "blur(12px)",
+                border: "1px solid rgba(255,255,255,0.5)",
+                color: showLandmarks ? "#fff" : "#374151",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+              }}
             >
               {showLandmarks ? "Landmarks ON" : "Landmarks OFF"}
             </button>
@@ -228,23 +257,32 @@ export default function ResultsDisplay({ result, onReset }: ResultsDisplayProps)
                 src={result.imageUrl}
                 alt="Analyzed photo"
                 className="w-full h-full object-contain rounded-xl"
+                style={{ boxShadow: "0 4px 24px rgba(0,0,0,0.12)" }}
               />
             )}
           </div>
         </div>
 
-        {/* Right — scrollable metrics */}
-        <div className="flex-1 flex flex-col overflow-hidden bg-white">
-          <div className="flex-shrink-0 px-6 py-3 border-b border-zinc-100">
-            <p className="text-sm font-medium text-black">
+        {/* Right — scrollable metrics panel (liquid glass) */}
+        <div className="flex-1 flex flex-col overflow-hidden rounded-2xl" style={{
+          background: "rgba(255,255,255,0.45)",
+          backdropFilter: "blur(32px)",
+          WebkitBackdropFilter: "blur(32px)",
+          border: "1px solid rgba(255,255,255,0.65)",
+          boxShadow: "0 2px 0 rgba(255,255,255,0.8) inset, 0 8px 32px rgba(0,0,0,0.08), 0 1px 0 rgba(0,0,0,0.04)",
+        }}>
+          {/* Section header */}
+          <div className="flex-shrink-0 px-6 py-3" style={{ borderBottom: "1px solid rgba(255,255,255,0.5)" }}>
+            <p className="text-sm font-semibold text-zinc-700">
               Your {tabs.find(t => t.id === activeTab)?.label} Ratios
             </p>
           </div>
 
+          {/* Scrollable list */}
           <div className="flex-1 overflow-y-auto">
             {activeTab === "harmony" && harmonyMetrics.map(({ category, metrics }) => (
               <div key={category}>
-                <div className="px-4 py-2 bg-zinc-50 border-b border-zinc-100">
+                <div className="px-4 py-2" style={{ background: "rgba(255,255,255,0.3)", borderBottom: "1px solid rgba(255,255,255,0.4)" }}>
                   <p className="text-xs font-mono uppercase tracking-widest text-zinc-400">{category}</p>
                 </div>
                 {metrics.map(metric => (
@@ -263,7 +301,7 @@ export default function ResultsDisplay({ result, onReset }: ResultsDisplayProps)
 
             {activeTab === "features" && featuresMetrics.map(({ category, metrics }) => (
               <div key={category}>
-                <div className="px-4 py-2 bg-zinc-50 border-b border-zinc-100">
+                <div className="px-4 py-2" style={{ background: "rgba(255,255,255,0.3)", borderBottom: "1px solid rgba(255,255,255,0.4)" }}>
                   <p className="text-xs font-mono uppercase tracking-widest text-zinc-400">{category}</p>
                 </div>
                 {metrics.map(metric => (
@@ -294,7 +332,7 @@ export default function ResultsDisplay({ result, onReset }: ResultsDisplayProps)
                   <SubMetricRow key={key} name={VISION_METRIC_LABELS[key]} score={result.visionScores![key]} />
                 ))}
                 {result.visionScores.reasoning && (
-                  <div className="p-5 border-t border-zinc-100">
+                  <div className="p-5" style={{ borderTop: "1px solid rgba(255,255,255,0.4)" }}>
                     <p className="text-xs text-zinc-400 mb-2">AI Analysis</p>
                     <p className="text-sm text-zinc-600 leading-relaxed">{result.visionScores.reasoning}</p>
                   </div>
