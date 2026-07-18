@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { AnalysisResult, MetricCategory, MetricResult, VisionScores, VISION_METRIC_LABELS } from "@/lib/types";
+import { AnalysisResult, MetricCategory, MetricResult, VISION_METRIC_LABELS } from "@/lib/types";
 import LandmarkOverlay from "./LandmarkOverlay";
 import MetricDetailModal from "./MetricDetailModal";
 import { getScoreColor, getScoreLabel, calculateOverallScore } from "@/lib/scoring";
@@ -23,10 +23,8 @@ function GradientBar({ score }: { score: number }) {
     <div className="relative flex-1 h-2 rounded-full overflow-hidden" style={{
       background: "linear-gradient(to right, #ef4444, #f97316, #eab308, #22c55e, #22c55e, #eab308, #f97316, #ef4444)"
     }}>
-      <div
-        className="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-white border-2 border-zinc-300 rounded-full shadow"
-        style={{ left: `calc(${pct}% - 6px)` }}
-      />
+      <div className="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-white border-2 border-zinc-300 rounded-full shadow"
+        style={{ left: `calc(${pct}% - 6px)` }} />
     </div>
   );
 }
@@ -34,22 +32,13 @@ function GradientBar({ score }: { score: number }) {
 function MetricRow({ name, value, score, onClick }: { name: string; value?: string; score: number; onClick?: () => void }) {
   const color = getScoreColor(score);
   return (
-    <button
-      onClick={onClick}
-      className="w-full flex items-center gap-4 py-3 px-4 text-left transition-all hover:bg-zinc-50 border-b border-zinc-100 last:border-0"
-    >
+    <button onClick={onClick} className="w-full flex items-center gap-4 py-3 px-4 text-left transition-all hover:bg-zinc-50 border-b border-zinc-100 last:border-0">
       <div className="flex-1 min-w-0">
         <p className="text-sm text-zinc-700 truncate">{name}</p>
-        {value && (
-          <span className="text-xs text-zinc-400 bg-zinc-100 px-1.5 py-0.5 rounded mt-0.5 inline-block">{value}</span>
-        )}
+        {value && <span className="text-xs text-zinc-400 bg-zinc-100 px-1.5 py-0.5 rounded mt-0.5 inline-block">{value}</span>}
       </div>
-      <div className="w-28 flex-shrink-0">
-        <GradientBar score={score} />
-      </div>
-      <span className="text-sm font-semibold w-10 text-right flex-shrink-0" style={{ color }}>
-        {score.toFixed(2)}
-      </span>
+      <div className="w-28 flex-shrink-0"><GradientBar score={score} /></div>
+      <span className="text-sm font-semibold w-10 text-right flex-shrink-0" style={{ color }}>{score.toFixed(2)}</span>
       <svg className="w-4 h-4 text-zinc-300 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
       </svg>
@@ -62,12 +51,16 @@ function SubMetricRow({ name, score }: { name: string; score: number }) {
   return (
     <div className="flex items-center gap-4 py-3 px-4 border-b border-zinc-100 last:border-0">
       <span className="text-sm text-zinc-700 flex-1">{name}</span>
-      <div className="w-28 flex-shrink-0">
-        <GradientBar score={score} />
-      </div>
-      <span className="text-sm font-semibold w-10 text-right flex-shrink-0" style={{ color }}>
-        {score.toFixed(2)}
-      </span>
+      <div className="w-28 flex-shrink-0"><GradientBar score={score} /></div>
+      <span className="text-sm font-semibold w-10 text-right flex-shrink-0" style={{ color }}>{score.toFixed(2)}</span>
+    </div>
+  );
+}
+
+function SectionHeader({ label }: { label: string }) {
+  return (
+    <div className="px-4 py-2 bg-zinc-50 border-b border-zinc-100">
+      <p className="text-xs font-mono uppercase tracking-widest text-zinc-400">{label}</p>
     </div>
   );
 }
@@ -114,7 +107,6 @@ export default function ResultsDisplay({ result, onReset }: ResultsDisplayProps)
   }, [result.visionScores]);
 
   const finalScore = result.finalScore ?? result.overallScore;
-
   const getScore = (id: string) => result.metrics.find(r => r.definition.id === id)?.score ?? 5.0;
 
   const angularitySubScores: Record<string, number> = {
@@ -134,6 +126,12 @@ export default function ResultsDisplay({ result, onReset }: ResultsDisplayProps)
     "Lips": (getScore("chin_philtrum") * 0.5) + (getScore("lower_third_proportion") * 0.5),
   };
 
+  const dimorphismVisionKeys: Array<keyof typeof VISION_METRIC_LABELS> = [
+    "facial_hair", "neck", "eyebrow_thickness", "nose_masculinity",
+    "brow_ridge", "hairline", "eyes_dimorphism", "lip_masculinity",
+    "face_shape_dimorphism", "jaw_dimorphism", "hair_length", "harmony_dimorphism",
+  ];
+
   const handleMetricClick = (metricId: string) => {
     const index = result.metrics.findIndex(m => m.definition.id === metricId);
     if (index !== -1 && result.metrics[index].value !== null) setSelectedMetricIndex(index);
@@ -151,42 +149,28 @@ export default function ResultsDisplay({ result, onReset }: ResultsDisplayProps)
 
   return (
     <div className="flex flex-col bg-[#f7f7f5]" style={{ height: "100vh", overflow: "hidden" }}>
-      {/* Header */}
       <header className="flex-shrink-0 bg-white border-b border-zinc-200 z-10">
         <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
-          <Link href="/dashboard" className="text-lg font-semibold text-black tracking-tight">
-            Paxxora
-          </Link>
+          <Link href="/dashboard" className="text-lg font-semibold text-black tracking-tight">Paxxora</Link>
           <div className="flex items-center gap-1">
             {tabs.map(tab => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
+              <button key={tab.id} onClick={() => setActiveTab(tab.id)}
                 className={`px-4 py-1.5 text-sm font-medium rounded-full transition-all border ${
-                  activeTab === tab.id
-                    ? "bg-black text-white border-black"
-                    : "text-zinc-500 border-transparent hover:text-black"
-                }`}
-              >
+                  activeTab === tab.id ? "bg-black text-white border-black" : "text-zinc-500 border-transparent hover:text-black"
+                }`}>
                 {tab.label}
               </button>
             ))}
-            <button
-              onClick={onReset}
-              className="ml-3 px-3 py-1.5 text-sm text-zinc-400 hover:text-black transition-colors"
-            >
+            <button onClick={onReset} className="ml-3 px-3 py-1.5 text-sm text-zinc-400 hover:text-black transition-colors">
               New Analysis
             </button>
           </div>
         </div>
       </header>
 
-      {/* Body */}
       <div className="flex flex-1 overflow-hidden max-w-7xl mx-auto w-full p-4 gap-4">
-
-        {/* Left — photo panel */}
+        {/* Left panel */}
         <div className="w-96 flex-shrink-0 flex flex-col overflow-hidden rounded-2xl bg-white border border-zinc-200 shadow-sm">
-          {/* Score header */}
           <div className="flex-shrink-0 px-5 py-4 border-b border-zinc-100 flex items-center justify-between">
             <div>
               <p className="text-xs text-zinc-400 mb-0.5 font-medium">Overall</p>
@@ -204,94 +188,91 @@ export default function ResultsDisplay({ result, onReset }: ResultsDisplayProps)
             </div>
           </div>
 
-          {/* Photo */}
-          <div className="flex-1 relative p-3 overflow-hidden bg-zinc-900 rounded-b-2xl">
-            <button
-              onClick={() => setShowLandmarks(!showLandmarks)}
-              className={`absolute top-5 right-5 z-10 px-3 py-1.5 text-xs font-medium rounded-full border transition-colors ${
-                showLandmarks
-                  ? "bg-black text-white border-black"
-                  : "bg-white/80 text-zinc-600 border-zinc-200 hover:border-zinc-400"
-              }`}
-            >
+          <div className="flex-1 relative overflow-hidden bg-zinc-900 rounded-b-2xl">
+            <button onClick={() => setShowLandmarks(!showLandmarks)}
+              className={`absolute top-4 right-4 z-10 px-3 py-1.5 text-xs font-medium rounded-full border transition-colors ${
+                showLandmarks ? "bg-black text-white border-black" : "bg-white/80 text-zinc-600 border-zinc-200 hover:border-zinc-400"
+              }`}>
               {showLandmarks ? "Landmarks ON" : "Landmarks OFF"}
             </button>
             {showLandmarks && result.landmarks && result.imageWidth && result.imageHeight ? (
-              <LandmarkOverlay
-                imageUrl={result.imageUrl}
-                landmarks={result.landmarks}
-                imageWidth={result.imageWidth}
-                imageHeight={result.imageHeight}
-              />
+              <LandmarkOverlay imageUrl={result.imageUrl} landmarks={result.landmarks} imageWidth={result.imageWidth} imageHeight={result.imageHeight} />
             ) : (
-              <img
-                src={result.imageUrl}
-                alt="Analyzed photo"
-                className="w-full h-full object-contain rounded-xl"
-              />
+              <img src={result.imageUrl} alt="Analyzed photo" className="w-full h-full object-contain p-3 rounded-xl" />
             )}
           </div>
         </div>
 
-        {/* Right — scrollable metrics panel */}
+        {/* Right panel */}
         <div className="flex-1 flex flex-col overflow-hidden rounded-2xl bg-white border border-zinc-200 shadow-sm">
           <div className="flex-shrink-0 px-6 py-3 border-b border-zinc-100">
-            <p className="text-sm font-semibold text-black">
-              Your {tabs.find(t => t.id === activeTab)?.label} Ratios
-            </p>
+            <p className="text-sm font-semibold text-black">Your {tabs.find(t => t.id === activeTab)?.label} Ratios</p>
           </div>
 
           <div className="flex-1 overflow-y-auto">
             {activeTab === "harmony" && harmonyMetrics.map(({ category, metrics }) => (
               <div key={category}>
-                <div className="px-4 py-2 bg-zinc-50 border-b border-zinc-100">
-                  <p className="text-xs font-mono uppercase tracking-widest text-zinc-400">{category}</p>
-                </div>
-                {metrics.map(metric => (
-                  metric.score !== null && (
-                    <MetricRow
-                      key={metric.definition.id}
-                      name={metric.definition.name}
-                      value={metric.value !== null ? String(metric.value.toFixed(2)) : undefined}
-                      score={metric.score}
-                      onClick={() => handleMetricClick(metric.definition.id)}
-                    />
-                  )
+                <SectionHeader label={category} />
+                {metrics.map(metric => metric.score !== null && (
+                  <MetricRow key={metric.definition.id} name={metric.definition.name}
+                    value={metric.value !== null ? String(metric.value.toFixed(2)) : undefined}
+                    score={metric.score} onClick={() => handleMetricClick(metric.definition.id)} />
                 ))}
               </div>
             ))}
 
             {activeTab === "features" && featuresMetrics.map(({ category, metrics }) => (
               <div key={category}>
-                <div className="px-4 py-2 bg-zinc-50 border-b border-zinc-100">
-                  <p className="text-xs font-mono uppercase tracking-widest text-zinc-400">{category}</p>
-                </div>
-                {metrics.map(metric => (
-                  metric.score !== null && (
-                    <MetricRow
-                      key={metric.definition.id}
-                      name={metric.definition.name}
-                      value={metric.value !== null ? String(metric.value.toFixed(2)) : undefined}
-                      score={metric.score}
-                      onClick={() => handleMetricClick(metric.definition.id)}
-                    />
-                  )
+                <SectionHeader label={category} />
+                {metrics.map(metric => metric.score !== null && (
+                  <MetricRow key={metric.definition.id} name={metric.definition.name}
+                    value={metric.value !== null ? String(metric.value.toFixed(2)) : undefined}
+                    score={metric.score} onClick={() => handleMetricClick(metric.definition.id)} />
                 ))}
               </div>
             ))}
 
-            {activeTab === "angularity" && Object.entries(angularitySubScores).map(([name, score]) => (
-              <SubMetricRow key={name} name={name} score={score} />
-            ))}
+            {activeTab === "angularity" && (
+              <div>
+                <SectionHeader label="Geometric" />
+                {Object.entries(angularitySubScores).map(([name, score]) => (
+                  <SubMetricRow key={name} name={name} score={score} />
+                ))}
+              </div>
+            )}
 
-            {activeTab === "dimorphism" && Object.entries(dimorphismSubScores).map(([name, score]) => (
-              <SubMetricRow key={name} name={name} score={score} />
-            ))}
+            {activeTab === "dimorphism" && (
+              <div>
+                <SectionHeader label="Geometric" />
+                {Object.entries(dimorphismSubScores).map(([name, score]) => (
+                  <SubMetricRow key={name} name={name} score={score} />
+                ))}
+
+                {result.visionScores ? (
+                  <>
+                    <SectionHeader label="AI Vision" />
+                    {dimorphismVisionKeys.map(key =>
+                      result.visionScores![key] !== undefined && (
+                        <SubMetricRow key={key} name={VISION_METRIC_LABELS[key]} score={result.visionScores![key] as number} />
+                      )
+                    )}
+                  </>
+                ) : !result.visionError && (
+                  <div className="flex items-center gap-3 p-6">
+                    <svg className="w-5 h-5 text-zinc-400 animate-spin" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
+                    </svg>
+                    <p className="text-sm text-zinc-500">Loading AI vision scores...</p>
+                  </div>
+                )}
+              </div>
+            )}
 
             {activeTab === "vision" && result.visionScores && (
               <div>
                 {(Object.keys(VISION_METRIC_LABELS) as Array<keyof typeof VISION_METRIC_LABELS>).map(key => (
-                  <SubMetricRow key={key} name={VISION_METRIC_LABELS[key]} score={result.visionScores![key]} />
+                  <SubMetricRow key={key} name={VISION_METRIC_LABELS[key]} score={result.visionScores![key] as number} />
                 ))}
                 {result.visionScores.reasoning && (
                   <div className="p-5 border-t border-zinc-100">
