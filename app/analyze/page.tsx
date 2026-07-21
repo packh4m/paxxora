@@ -232,37 +232,6 @@ export default function Home() {
               </button>
             </div>
           )}
-
-          <div className="mt-10 grid grid-cols-3 gap-4 text-center">
-            {[
-              { value: "33", label: "Facial Metrics" },
-              { value: "52", label: "Key Landmarks" },
-              { value: "0–10", label: "Precision Score" },
-            ].map((stat) => (
-              <div key={stat.label} className="p-4 bg-white rounded-xl border border-zinc-200">
-                <div className="text-xl font-semibold text-black mb-1">{stat.value}</div>
-                <div className="text-xs text-zinc-400">{stat.label}</div>
-              </div>
-            ))}
-          </div>
-
-          <div className="mt-6 p-6 bg-white rounded-xl border border-zinc-200">
-            <h3 className="text-xs font-mono uppercase tracking-widest text-zinc-400 mb-4">How it works</h3>
-            <div className="space-y-3">
-              {[
-                "Upload a clear, front-facing photo with good lighting",
-                "Place 52 key facial landmarks with guided reference images",
-                "33 metrics calculated and scored against ideal ranges",
-              ].map((step, i) => (
-                <div key={i} className="flex items-start gap-3">
-                  <span className="flex-shrink-0 w-5 h-5 rounded-full bg-black text-white text-xs flex items-center justify-center">
-                    {i + 1}
-                  </span>
-                  <p className="text-sm text-zinc-500">{step}</p>
-                </div>
-              ))}
-            </div>
-          </div>
         </div>
       </main>
 
