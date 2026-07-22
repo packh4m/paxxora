@@ -10,11 +10,16 @@ interface LandmarkEditorProps {
   imageHeight: number;
   landmarks: Point[];
   editingIndex: number;
+  relevantIndices: number[];
   onDone: (updatedLandmarks: Point[]) => void;
   onBack: () => void;
 }
 
-const ZOOM_LEVELS = [{ label: "1", sub: "2x", scale: 2 }, { label: "2", sub: "4x", scale: 4 }, { label: "3", sub: "8x", scale: 8 }];
+const ZOOM_LEVELS = [
+  { label: "1", sub: "2x", scale: 2 },
+  { label: "2", sub: "4x", scale: 4 },
+  { label: "3", sub: "8x", scale: 8 },
+];
 
 export default function LandmarkEditor({
   imageUrl,
@@ -22,6 +27,7 @@ export default function LandmarkEditor({
   imageHeight,
   landmarks,
   editingIndex,
+  relevantIndices,
   onDone,
   onBack,
 }: LandmarkEditorProps) {
@@ -29,10 +35,8 @@ export default function LandmarkEditor({
   const [zoomIndex, setZoomIndex] = useState(1);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const imageRef = useRef<HTMLImageElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
 
   const point = LANDMARK_POINTS[editingIndex - 1];
-  const cropFile = `/landmarks/${point?.name?.toLowerCase().replace(/ /g, " ")}.png`;
 
   const drawCanvas = useCallback(() => {
     const canvas = canvasRef.current;
@@ -57,21 +61,36 @@ export default function LandmarkEditor({
 
     points.forEach((p, i) => {
       if (!p || (p.x === 0 && p.y === 0)) return;
+      const isActive = i === editingIndex;
+      const isRelevant = relevantIndices.includes(i);
+
+      if (!isActive && !isRelevant) return;
+
       const x = p.x * scaleX;
       const y = p.y * scaleY;
-      const isActive = i === editingIndex;
 
       ctx.beginPath();
       ctx.arc(x, y, isActive ? 8 : 5, 0, Math.PI * 2);
-      ctx.fillStyle = isActive ? "#ef4444" : "rgba(255,255,255,0.6)";
+      ctx.fillStyle = isActive ? "#ef4444" : "rgba(0, 206, 209, 0.8)";
       ctx.fill();
-      ctx.strokeStyle = isActive ? "#fff" : "rgba(255,255,255,0.4)";
-      ctx.lineWidth = isActive ? 2 : 1;
+      ctx.strokeStyle = "#fff";
+      ctx.lineWidth = isActive ? 2 : 1.5;
       ctx.stroke();
     });
-  }, [points, editingIndex, imageWidth, imageHeight]);
+  }, [points, editingIndex, relevantIndices, imageWidth, imageHeight]);
 
   useEffect(() => { drawCanvas(); }, [drawCanvas]);
+
+  useEffect(() => {
+    const timeout = setTimeout(drawCanvas, 50);
+    return () => clearTimeout(timeout);
+  }, [zoomIndex, drawCanvas]);
+
+  useEffect(() => {
+    const handleResize = () => setTimeout(drawCanvas, 100);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [drawCanvas]);
 
   const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
@@ -117,38 +136,44 @@ export default function LandmarkEditor({
 
   return (
     <div className="fixed inset-0 z-[60] bg-[#f7f7f5] flex">
-      {/* Left — zoomed photo */}
-      <div className="flex-1 flex flex-col overflow-hidden bg-zinc-100">
+      {/* Left — photo */}
+      <div className="flex-1 flex flex-col overflow-hidden">
         {/* Header */}
         <div className="flex-shrink-0 px-6 py-4 bg-white border-b border-zinc-200 flex items-center gap-4">
-          <div className="w-10 h-10 rounded-full bg-black text-white flex items-center justify-center text-sm font-semibold">
+          <div className="w-10 h-10 rounded-full bg-black text-white flex items-center justify-center text-sm font-semibold flex-shrink-0">
             {editingIndex}
           </div>
           <div>
             <p className="text-sm font-semibold text-black">{point?.name}</p>
             <p className="text-xs text-zinc-400">Editing landmark · {editingIndex} of 52</p>
           </div>
-          <button onClick={() => {
-            const newPoints = [...points];
-            newPoints[editingIndex] = { ...landmarks[editingIndex] };
-            setPoints(newPoints);
-          }} className="ml-auto text-xs text-zinc-400 hover:text-black transition-colors px-3 py-1.5 border border-zinc-200 rounded-lg">
+          <button
+            onClick={() => {
+              const newPoints = [...points];
+              newPoints[editingIndex] = { ...landmarks[editingIndex] };
+              setPoints(newPoints);
+            }}
+            className="ml-auto text-xs text-zinc-500 hover:text-black transition-colors px-3 py-1.5 border border-zinc-200 rounded-lg"
+          >
             Reset
           </button>
         </div>
 
-        {/* Image */}
-        <div ref={containerRef} className="flex-1 overflow-auto flex items-center justify-center p-4">
-          <div className="relative" style={{
-            transform: `scale(${scale / 2})`,
-            transformOrigin: "center center",
-          }}>
+        {/* Image canvas */}
+        <div className="flex-1 overflow-auto flex items-center justify-center bg-zinc-100 p-4">
+          <div
+            className="relative"
+            style={{
+              transform: `scale(${scale / 2})`,
+              transformOrigin: "center center",
+            }}
+          >
             <img
               ref={imageRef}
               src={imageUrl}
               alt="Edit landmark"
-              className="max-w-2xl select-none"
-              style={{ maxHeight: "70vh", objectFit: "contain", display: "block" }}
+              className="select-none block"
+              style={{ maxWidth: "800px", maxHeight: "70vh", objectFit: "contain" }}
               onLoad={drawCanvas}
               draggable={false}
             />
@@ -171,8 +196,8 @@ export default function LandmarkEditor({
         {/* Point info */}
         <div className="px-5 py-5 border-b border-zinc-100">
           <p className="text-base font-semibold text-black mb-0.5">{point?.name}</p>
-          <p className="text-xs text-zinc-400 italic">{point?.latin}</p>
-          <p className="text-xs text-zinc-500 mt-2 leading-relaxed">{point?.description}</p>
+          <p className="text-xs text-zinc-400 italic mb-2">{point?.latin}</p>
+          <p className="text-xs text-zinc-500 leading-relaxed">{point?.description}</p>
         </div>
 
         {/* Reference image */}
@@ -209,10 +234,15 @@ export default function LandmarkEditor({
           <p className="text-xs font-mono uppercase tracking-widest text-zinc-400 mb-3">Zoom level</p>
           <div className="grid grid-cols-3 gap-2">
             {ZOOM_LEVELS.map((z, i) => (
-              <button key={i} onClick={() => setZoomIndex(i)}
+              <button
+                key={i}
+                onClick={() => setZoomIndex(i)}
                 className={`py-2 rounded-lg text-center border transition-colors ${
-                  zoomIndex === i ? "bg-black text-white border-black" : "bg-zinc-50 text-zinc-600 border-zinc-200 hover:border-zinc-400"
-                }`}>
+                  zoomIndex === i
+                    ? "bg-black text-white border-black"
+                    : "bg-zinc-50 text-zinc-600 border-zinc-200 hover:border-zinc-400"
+                }`}
+              >
                 <div className="text-sm font-semibold">{z.label}</div>
                 <div className="text-xs opacity-60">{z.sub}</div>
               </button>
@@ -222,12 +252,16 @@ export default function LandmarkEditor({
 
         {/* Actions */}
         <div className="p-4 mt-auto flex gap-3">
-          <button onClick={onBack}
-            className="flex-1 py-2.5 text-sm font-medium text-zinc-600 border border-zinc-200 rounded-xl hover:bg-zinc-50 transition-colors">
+          <button
+            onClick={onBack}
+            className="flex-1 py-2.5 text-sm font-medium text-zinc-600 border border-zinc-200 rounded-xl hover:bg-zinc-50 transition-colors"
+          >
             Back
           </button>
-          <button onClick={() => onDone(points)}
-            className="flex-1 py-2.5 text-sm font-medium bg-black text-white rounded-xl hover:bg-zinc-800 transition-colors">
+          <button
+            onClick={() => onDone(points)}
+            className="flex-1 py-2.5 text-sm font-medium bg-black text-white rounded-xl hover:bg-zinc-800 transition-colors"
+          >
             Done
           </button>
         </div>
