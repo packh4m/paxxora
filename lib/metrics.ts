@@ -169,7 +169,7 @@ export function calculateAllMetrics(faceLandmarks: FaceLandmarks): MetricResult[
   const results: MetricResult[] = [];
 
   const core = calculateCoreMetrics(faceLandmarks);
-  const pixelsPerMm = core.raw.faceWidth / 130; // ~130mm average face width
+  const pixelsPerMm = core.raw.faceWidth > 0 ? core.raw.faceWidth / 130 : 1;
 
   // Extra data for specific metrics
   let jawSlopeLeft: number | undefined;
