@@ -28,7 +28,7 @@ const METRIC_LANDMARKS: Record<string, number[]> = {
   lip_ratio: [40, 42, 6],
   chin_philtrum: [35, 42, 7],
   canthal_tilt: [12, 13, 23, 24],
-  midface_ratio: [2, 3, 34, 35],
+  midface_ratio: [51, 52, 34, 35],
   cupids_bow_depth: [40, 41],
   top_third: [1, 18, 29],
   face_width_height: [51, 52, 34, 7],
@@ -144,8 +144,7 @@ export default function MetricDetailModal({
       case "lip_ratio": line(L(40), L(42)); line(L(42), L(6)); dot(L(40)); dot(L(42)); dot(L(6)); label(valueStr, L(42), 20); break;
       case "chin_philtrum": line(L(35), L(42)); line(L(42), L(7)); dot(L(35)); dot(L(42)); dot(L(7)); label(valueStr, mid(L(42), L(7)), 16); break;
       case "canthal_tilt": line(L(12), L(13)); line(L(23), L(24)); dot(L(12)); dot(L(13)); dot(L(23)); dot(L(24)); label(valueStr, mid(L(12), L(13)), -14); break;
-      case "midface_ratio": line(L(2), L(3)); line(L(34), L(35)); dot(L(2)); dot(L(3)); dot(L(34)); dot(L(35)); label(valueStr, mid(L(2), L(3)), -14); break;
-      case "cupids_bow_depth": line(L(40), L(41)); dot(L(40)); dot(L(41)); label(valueStr, L(41), 16); break;
+      case "midface_ratio": line(L(51), L(52)); line(L(34), L(35)); dot(L(51)); dot(L(52)); dot(L(34)); dot(L(35)); label(valueStr, mid(L(51), L(52)), -14); break;      case "cupids_bow_depth": line(L(40), L(41)); dot(L(40)); dot(L(41)); label(valueStr, L(41), 16); break;
       case "top_third": { const g = mid(L(18), L(29)); line(L(1), g); dot(L(1)); dot(g); label(valueStr, mid(L(1), g), 16); break; }
       case "face_width_height": line(L(51), L(52)); dot(L(51)); dot(L(52)); label(valueStr, mid(L(51), L(52)), -14); break;
       case "brow_eye_distance": line(L(20), L(14)); line(L(31), L(25), true); dot(L(20)); dot(L(14)); dot(L(31)); dot(L(25)); label(valueStr, mid(L(20), L(14)), 16); break;
