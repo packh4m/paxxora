@@ -557,14 +557,6 @@ export function calculateAllMetrics(faceLandmarks: FaceLandmarks): MetricResult[
           break;
         }
 
-        case "mouth_corner_position": {
-         const refY = L[42].y;
-         const leftDiff = refY - L[38].y;
-        const rightDiff = refY - L[39].y;
-         value = ((leftDiff + rightDiff) / 2) / pixelsPerMm;
-        break;
-}
-
         case "ear_protrusion_ratio": {
           // Ear protrusion relative to ear-to-ear width
           const earToEarWidth = distance(L[8], L[9]);
