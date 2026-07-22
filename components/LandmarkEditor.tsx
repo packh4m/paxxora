@@ -26,7 +26,7 @@ export default function LandmarkEditor({
   imageWidth,
   imageHeight,
   landmarks,
-  editingIndex,
+  editingIndex: initialEditingIndex,
   relevantIndices,
   onDone,
   onBack,
@@ -34,15 +34,20 @@ export default function LandmarkEditor({
   const [points, setPoints] = useState<Point[]>([...landmarks]);
   const [zoomIndex, setZoomIndex] = useState(0);
   const [baseSize, setBaseSize] = useState<{ width: number; height: number } | null>(null);
+  const [currentEditIndex, setCurrentEditIndex] = useState(initialEditingIndex);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const imageRef = useRef<HTMLImageElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  const point = LANDMARK_POINTS[editingIndex - 1];
+  const point = LANDMARK_POINTS[currentEditIndex - 1];
   const multiplier = ZOOM_LEVELS[zoomIndex].multiplier;
 
   const displayWidth = baseSize ? baseSize.width * multiplier : undefined;
   const displayHeight = baseSize ? baseSize.height * multiplier : undefined;
+
+  const currentPosInRelevant = relevantIndices.indexOf(currentEditIndex);
+  const hasPrev = currentPosInRelevant > 0;
+  const hasNext = currentPosInRelevant < relevantIndices.length - 1;
 
   const drawCanvas = useCallback(() => {
     const canvas = canvasRef.current;
@@ -65,14 +70,12 @@ export default function LandmarkEditor({
 
     points.forEach((p, i) => {
       if (!p || (p.x === 0 && p.y === 0)) return;
-      const isActive = i === editingIndex;
+      const isActive = i === currentEditIndex;
       const isRelevant = relevantIndices.includes(i);
       if (!isActive && !isRelevant) return;
 
       const x = p.x * scaleX;
       const y = p.y * scaleY;
-
-      // Fixed screen size regardless of zoom
       const radius = isActive ? 4 : 3;
 
       ctx.beginPath();
@@ -88,10 +91,10 @@ export default function LandmarkEditor({
         ctx.fillStyle = "#fff";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        ctx.fillText(String(editingIndex), x, y - radius - 5);
+        ctx.fillText(String(currentEditIndex), x, y - radius - 5);
       }
     });
-  }, [points, editingIndex, relevantIndices, imageWidth, imageHeight, displayWidth, displayHeight]);
+  }, [points, currentEditIndex, relevantIndices, imageWidth, imageHeight, displayWidth, displayHeight]);
 
   useEffect(() => { drawCanvas(); }, [drawCanvas]);
 
@@ -105,6 +108,22 @@ export default function LandmarkEditor({
     if (baseSize) drawCanvas();
   }, [baseSize, drawCanvas]);
 
+  // Auto-scroll to active point
+  const scrollToActive = useCallback(() => {
+    const current = points[currentEditIndex];
+    const scroll = scrollRef.current;
+    if (!current || !scroll || !displayWidth || !displayHeight) return;
+    const x = (current.x / imageWidth) * displayWidth;
+    const y = (current.y / imageHeight) * displayHeight;
+    scroll.scrollTo({
+      left: x - scroll.clientWidth / 2,
+      top: y - scroll.clientHeight / 2,
+      behavior: "smooth",
+    });
+  }, [currentEditIndex, points, displayWidth, displayHeight, imageWidth, imageHeight]);
+
+  useEffect(() => { scrollToActive(); }, [zoomIndex, currentEditIndex, scrollToActive]);
+
   const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
     if (!canvas || !displayWidth || !displayHeight) return;
@@ -117,13 +136,13 @@ export default function LandmarkEditor({
     const imageY = (clickY / displayHeight) * imageHeight;
 
     const newPoints = [...points];
-    newPoints[editingIndex] = { x: imageX, y: imageY };
+    newPoints[currentEditIndex] = { x: imageX, y: imageY };
     setPoints(newPoints);
   };
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      const current = points[editingIndex];
+      const current = points[currentEditIndex];
       if (!current) return;
       let dx = 0, dy = 0;
       switch (e.key) {
@@ -131,11 +150,19 @@ export default function LandmarkEditor({
         case "ArrowDown": dy = 1; break;
         case "ArrowLeft": dx = -1; break;
         case "ArrowRight": dx = 1; break;
+        case "Enter":
+          e.preventDefault();
+          if (hasNext) setCurrentEditIndex(relevantIndices[currentPosInRelevant + 1]);
+          return;
+        case "Backspace":
+          e.preventDefault();
+          if (hasPrev) setCurrentEditIndex(relevantIndices[currentPosInRelevant - 1]);
+          return;
         default: return;
       }
       e.preventDefault();
       const newPoints = [...points];
-      newPoints[editingIndex] = {
+      newPoints[currentEditIndex] = {
         x: Math.max(0, Math.min(imageWidth, current.x + dx)),
         y: Math.max(0, Math.min(imageHeight, current.y + dy)),
       };
@@ -143,38 +170,26 @@ export default function LandmarkEditor({
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [points, editingIndex, imageWidth, imageHeight]);
-
-  useEffect(() => {
-    const current = points[editingIndex];
-    const scroll = scrollRef.current;
-    if (!current || !scroll || !displayWidth || !displayHeight) return;
-
-    const x = (current.x / imageWidth) * displayWidth;
-    const y = (current.y / imageHeight) * displayHeight;
-
-    scroll.scrollTo({
-      left: x - scroll.clientWidth / 2,
-      top: y - scroll.clientHeight / 2,
-      behavior: "smooth",
-    });
-  }, [zoomIndex, displayWidth, displayHeight]);
+  }, [points, currentEditIndex, imageWidth, imageHeight, hasPrev, hasNext, relevantIndices, currentPosInRelevant]);
 
   return (
     <div className="fixed inset-0 z-[60] bg-[#f7f7f5] flex">
       <div className="flex-1 flex flex-col overflow-hidden">
+        {/* Header */}
         <div className="flex-shrink-0 px-6 py-4 bg-white border-b border-zinc-200 flex items-center gap-4">
           <div className="w-10 h-10 rounded-full bg-black text-white flex items-center justify-center text-sm font-semibold flex-shrink-0">
-            {editingIndex}
+            {currentEditIndex}
           </div>
           <div>
             <p className="text-sm font-semibold text-black">{point?.name}</p>
-            <p className="text-xs text-zinc-400">Editing landmark · {editingIndex} of 52</p>
+            <p className="text-xs text-zinc-400">
+              Landmark {currentPosInRelevant + 1} of {relevantIndices.length}
+            </p>
           </div>
           <button
             onClick={() => {
               const newPoints = [...points];
-              newPoints[editingIndex] = { ...landmarks[editingIndex] };
+              newPoints[currentEditIndex] = { ...landmarks[currentEditIndex] };
               setPoints(newPoints);
             }}
             className="ml-auto text-xs text-zinc-500 hover:text-black transition-colors px-3 py-1.5 border border-zinc-200 rounded-lg"
@@ -183,6 +198,7 @@ export default function LandmarkEditor({
           </button>
         </div>
 
+        {/* Scrollable image */}
         <div ref={scrollRef} className="flex-1 overflow-auto bg-zinc-100">
           <div
             className="relative"
@@ -216,11 +232,27 @@ export default function LandmarkEditor({
           </div>
         </div>
 
-        <div className="flex-shrink-0 px-6 py-3 bg-white border-t border-zinc-200 text-center">
-          <p className="text-xs text-zinc-400">Click to move point · Arrow keys to fine-tune (1px) · Scroll to navigate</p>
+        {/* Bottom bar with prev/next */}
+        <div className="flex-shrink-0 px-6 py-3 bg-white border-t border-zinc-200 flex items-center justify-between">
+          <button
+            onClick={() => hasPrev && setCurrentEditIndex(relevantIndices[currentPosInRelevant - 1])}
+            disabled={!hasPrev}
+            className="px-4 py-1.5 text-xs font-medium border border-zinc-200 rounded-lg text-zinc-600 hover:bg-zinc-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+          >
+            ← Previous
+          </button>
+          <p className="text-xs text-zinc-400">Click to move · Arrow keys to fine-tune</p>
+          <button
+            onClick={() => hasNext && setCurrentEditIndex(relevantIndices[currentPosInRelevant + 1])}
+            disabled={!hasNext}
+            className="px-4 py-1.5 text-xs font-medium border border-zinc-200 rounded-lg text-zinc-600 hover:bg-zinc-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+          >
+            Next →
+          </button>
         </div>
       </div>
 
+      {/* Right sidebar */}
       <div className="w-72 flex-shrink-0 bg-white border-l border-zinc-200 flex flex-col">
         <div className="px-5 py-5 border-b border-zinc-100">
           <p className="text-base font-semibold text-black mb-0.5">{point?.name}</p>
@@ -240,18 +272,27 @@ export default function LandmarkEditor({
           </div>
         </div>
 
-        <div className="px-5 py-4 border-b border-zinc-100">
-          <p className="text-xs font-mono uppercase tracking-widest text-zinc-400 mb-3">Keyboard shortcuts</p>
-          <div className="space-y-2">
-            {[
-              { key: "↑ ↓ ← →", label: "Fine-tune (1px)" },
-              { key: "Click", label: "Move point" },
-              { key: "Scroll", label: "Pan image" },
-            ].map(({ key, label }) => (
-              <div key={key} className="flex items-center justify-between">
-                <kbd className="px-2 py-0.5 bg-zinc-100 border border-zinc-200 rounded text-xs font-mono text-zinc-600">{key}</kbd>
-                <span className="text-xs text-zinc-400">{label}</span>
-              </div>
+        {/* Landmark list */}
+        <div className="flex-1 overflow-y-auto px-5 py-4 border-b border-zinc-100">
+          <p className="text-xs font-mono uppercase tracking-widest text-zinc-400 mb-3">Landmarks</p>
+          <div className="space-y-1">
+            {relevantIndices.map((idx) => (
+              <button
+                key={idx}
+                onClick={() => setCurrentEditIndex(idx)}
+                className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left text-sm transition-colors ${
+                  idx === currentEditIndex
+                    ? "bg-black text-white"
+                    : "text-zinc-600 hover:bg-zinc-50"
+                }`}
+              >
+                <span className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-medium flex-shrink-0 ${
+                  idx === currentEditIndex ? "bg-white text-black" : "bg-zinc-200 text-zinc-600"
+                }`}>
+                  {idx}
+                </span>
+                {LANDMARK_POINTS[idx - 1]?.name}
+              </button>
             ))}
           </div>
         </div>
@@ -276,7 +317,7 @@ export default function LandmarkEditor({
           </div>
         </div>
 
-        <div className="p-4 mt-auto flex gap-3">
+        <div className="p-4 flex gap-3">
           <button
             onClick={onBack}
             className="flex-1 py-2.5 text-sm font-medium text-zinc-600 border border-zinc-200 rounded-xl hover:bg-zinc-50 transition-colors"
