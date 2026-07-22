@@ -41,29 +41,36 @@ export function Navigation() {
             isScrolled ? "h-14" : "h-20"
           }`}
         >
-          <a href="#" className="flex items-center gap-2 group">
+          {/* Logo */}
+          <Link href="/" className="flex items-center gap-2 group">
             <img
               src="/paxxora.svg"
               alt="Paxxora logo"
               className="object-contain transition-all duration-500 h-10 w-10"
             />
-            <span className={`font-display tracking-tight transition-all duration-500 ${isScrolled ? "text-xl" : "text-2xl"}`}>Paxxora</span>
-            <span className={`text-muted-foreground font-mono transition-all duration-500 ${isScrolled ? "text-[10px] mt-0.5" : "text-xs mt-1"}`}>TM</span>
-          </a>
+            <span className={`font-display tracking-tight transition-all duration-500 ${isScrolled ? "text-xl" : "text-2xl"}`}>
+              Paxxora
+            </span>
+            <span className={`text-muted-foreground font-mono transition-all duration-500 ${isScrolled ? "text-[10px] mt-0.5" : "text-xs mt-1"}`}>
+              TM
+            </span>
+          </Link>
 
+          {/* Desktop nav */}
           <div className="hidden md:flex items-center gap-12">
             {navLinks.map((link) => (
-              
+              <Link
                 key={link.name}
                 href={link.href}
                 className="text-sm text-foreground/70 hover:text-foreground transition-colors duration-300 relative group"
               >
                 {link.name}
                 <span className="absolute -bottom-1 left-0 w-0 h-px bg-foreground transition-all duration-300 group-hover:w-full" />
-              </a>
+              </Link>
             ))}
           </div>
 
+          {/* Desktop CTA */}
           <div className="hidden md:flex items-center gap-4">
             <Button
               asChild
@@ -74,6 +81,7 @@ export function Navigation() {
             </Button>
           </div>
 
+          {/* Mobile menu button */}
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             className="md:hidden p-2"
@@ -84,6 +92,7 @@ export function Navigation() {
         </div>
       </nav>
 
+      {/* Mobile menu */}
       <div
         className={`md:hidden fixed inset-0 bg-background z-40 transition-all duration-500 ${
           isMobileMenuOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
@@ -93,7 +102,7 @@ export function Navigation() {
         <div className="flex flex-col h-full px-8 pt-28 pb-8">
           <div className="flex-1 flex flex-col justify-center gap-8">
             {navLinks.map((link, i) => (
-              
+              <Link
                 key={link.name}
                 href={link.href}
                 onClick={() => setIsMobileMenuOpen(false)}
@@ -103,7 +112,7 @@ export function Navigation() {
                 style={{ transitionDelay: isMobileMenuOpen ? `${i * 75}ms` : "0ms" }}
               >
                 {link.name}
-              </a>
+              </Link>
             ))}
           </div>
 
