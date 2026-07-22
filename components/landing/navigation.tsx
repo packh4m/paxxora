@@ -41,7 +41,6 @@ export function Navigation() {
             isScrolled ? "h-14" : "h-20"
           }`}
         >
-          {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group">
             <img
               src="/paxxora.svg"
@@ -51,12 +50,8 @@ export function Navigation() {
             <span className={`font-display tracking-tight transition-all duration-500 ${isScrolled ? "text-xl" : "text-2xl"}`}>
               Paxxora
             </span>
-            <span className={`text-muted-foreground font-mono transition-all duration-500 ${isScrolled ? "text-[10px] mt-0.5" : "text-xs mt-1"}`}>
-              TM
-            </span>
           </Link>
 
-          {/* Desktop nav */}
           <div className="hidden md:flex items-center gap-12">
             {navLinks.map((link) => (
               <Link
@@ -70,7 +65,6 @@ export function Navigation() {
             ))}
           </div>
 
-          {/* Desktop CTA */}
           <div className="hidden md:flex items-center gap-4">
             <Button
               asChild
@@ -81,7 +75,6 @@ export function Navigation() {
             </Button>
           </div>
 
-          {/* Mobile menu button */}
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             className="md:hidden p-2"
@@ -92,7 +85,6 @@ export function Navigation() {
         </div>
       </nav>
 
-      {/* Mobile menu */}
       <div
         className={`md:hidden fixed inset-0 bg-background z-40 transition-all duration-500 ${
           isMobileMenuOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
