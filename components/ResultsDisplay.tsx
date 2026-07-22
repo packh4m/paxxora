@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import { AnalysisResult, MetricCategory, VISION_METRIC_LABELS } from "@/lib/types";
 import LandmarkOverlay from "./LandmarkOverlay";
 import MetricDetailModal from "./MetricDetailModal";
+import { calculateAllMetrics } from "@/lib/metrics";
 import { getScoreColor, getScoreLabel, calculateOverallScore } from "@/lib/scoring";
 import Link from "next/link";
 
