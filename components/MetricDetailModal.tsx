@@ -52,8 +52,7 @@ const METRIC_LANDMARKS: Record<string, number[]> = {
   iaa_jfa_deviation: [16, 27, 35, 45, 46, 47, 48],
   ear_protrusion_ratio: [8, 9, 51, 52],
   ear_protrusion_angle: [8, 9, 42, 51, 52],
-  mouth_corner_position: [38, 39, 42],
-};
+  mouth_corner_position: [38, 39, 42],};
 
 const LANDMARK_NAMES: Record<number, string> = {
   1: "Hairline", 2: "Left Pupil", 3: "Right Pupil", 4: "Left Nose Side",
@@ -138,6 +137,7 @@ export default function MetricDetailModal({
     };
 
     switch (metricId) {
+      case "mouth_corner_position": line(L(38), { x: L(38).x, y: L(42).y }); line(L(39), { x: L(39).x, y: L(42).y }, true); dot(L(38)); dot(L(39)); dot(L(42)); label(valueStr, mid(L(38), L(39)), 16); break;
       case "nose_bridge_width": line(L(36), L(37)); line(L(4), L(5)); dot(L(36)); dot(L(37)); dot(L(4)); dot(L(5)); label(valueStr, mid(L(36), L(37))); break;
       case "lower_third": line(L(35), L(7)); dot(L(35)); dot(L(7)); label(valueStr, mid(L(35), L(7)), 16); break;
       case "lip_ratio": line(L(40), L(42)); line(L(42), L(6)); dot(L(40)); dot(L(42)); dot(L(6)); label(valueStr, L(42), 20); break;
