@@ -55,6 +55,13 @@ const DIMORPHISM_VISION_INFO: Record<string, { description: string; why: string 
   hair_length: { description: "AI assessment of how masculine the hair length and style appears.", why: "Shorter hair traditionally emphasises facial structure and is associated with masculinity. Longer hair can soften facial features and reduce the perception of masculine sharpness." },
 };
 
+const VISION_UNIQUE_KEYS: Array<keyof typeof VISION_METRIC_LABELS> = [
+  "cheekbone_prominence",
+  "skin_quality",
+  "facial_fat",
+  "overall_impression",
+];
+
 function GradientBar({ score }: { score: number }) {
   const pct = (score / 10) * 100;
   return (
@@ -220,8 +227,6 @@ export default function ResultsDisplay({ result, onReset }: ResultsDisplayProps)
 
   return (
     <div className="flex flex-col bg-[#f7f7f5]" style={{ height: "100vh", overflow: "hidden" }}>
-
-      {/* Header */}
       <header className="flex-shrink-0 bg-white border-b border-zinc-200 z-10">
         <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
           <Link href="/dashboard" className="text-lg font-semibold text-black tracking-tight">Paxxora</Link>
@@ -241,7 +246,6 @@ export default function ResultsDisplay({ result, onReset }: ResultsDisplayProps)
         </div>
       </header>
 
-      {/* Score banner */}
       <div className="flex-shrink-0 bg-white border-b border-zinc-200 px-6 py-3">
         <div className="max-w-7xl mx-auto flex items-center gap-8">
           <div className="flex-shrink-0">
@@ -267,12 +271,8 @@ export default function ResultsDisplay({ result, onReset }: ResultsDisplayProps)
         </div>
       </div>
 
-      {/* Main */}
       <div className="flex flex-1 overflow-hidden max-w-7xl mx-auto w-full p-4 gap-4">
-
-        {/* Left — photo */}
         <div className="w-80 flex-shrink-0 flex flex-col overflow-hidden rounded-2xl bg-white border border-zinc-200 shadow-sm">
-          {/* Score header */}
           <div className="flex-shrink-0 px-4 py-3 border-b border-zinc-100 flex items-center justify-between">
             <div>
               <p className="text-xs text-zinc-400 mb-0.5">{tabs.find(t => t.id === activeTab)?.label} score</p>
@@ -287,27 +287,15 @@ export default function ResultsDisplay({ result, onReset }: ResultsDisplayProps)
               {showLandmarks ? "Landmarks ON" : "Landmarks OFF"}
             </button>
           </div>
-
-          {/* Photo — fills remaining space, no padding, covers fully */}
           <div className="flex-1 relative overflow-hidden rounded-b-2xl">
             {showLandmarks && result.landmarks && result.imageWidth && result.imageHeight ? (
-              <LandmarkOverlay
-                imageUrl={result.imageUrl}
-                landmarks={result.landmarks}
-                imageWidth={result.imageWidth}
-                imageHeight={result.imageHeight}
-              />
+              <LandmarkOverlay imageUrl={result.imageUrl} landmarks={result.landmarks} imageWidth={result.imageWidth} imageHeight={result.imageHeight} />
             ) : (
-              <img
-                src={result.imageUrl}
-                alt="Analyzed photo"
-                className="w-full h-full object-cover"
-              />
+              <img src={result.imageUrl} alt="Analyzed photo" className="w-full h-full object-cover" />
             )}
           </div>
         </div>
 
-        {/* Right — metrics */}
         <div className="flex-1 flex flex-col overflow-hidden rounded-2xl bg-white border border-zinc-200 shadow-sm">
           <div className="flex-shrink-0 px-6 py-3 border-b border-zinc-100 flex items-center justify-between">
             <p className="text-sm font-semibold text-black">Your {tabs.find(t => t.id === activeTab)?.label} ratios</p>
@@ -316,7 +304,7 @@ export default function ResultsDisplay({ result, onReset }: ResultsDisplayProps)
                activeTab === "features" ? featuresMetrics.flatMap(c => c.metrics).filter(m => m.score !== null).length :
                activeTab === "angularity" ? Object.keys(angularitySubScores).length :
                activeTab === "dimorphism" ? Object.keys(dimorphismSubScores).length + (result.visionScores ? dimorphismVisionKeys.length : 0) :
-               Object.keys(VISION_METRIC_LABELS).length} metrics
+               VISION_UNIQUE_KEYS.length} metrics
             </p>
           </div>
 
@@ -368,7 +356,7 @@ export default function ResultsDisplay({ result, onReset }: ResultsDisplayProps)
 
             {activeTab === "vision" && result.visionScores && (
               <>
-                {(Object.keys(VISION_METRIC_LABELS) as Array<keyof typeof VISION_METRIC_LABELS>).map(key => (
+                {VISION_UNIQUE_KEYS.map(key => (
                   <MetricRow key={key} name={VISION_METRIC_LABELS[key]} score={result.visionScores![key] as number} />
                 ))}
                 {result.visionScores.reasoning && (
