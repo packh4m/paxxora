@@ -22,7 +22,7 @@ export default function AuthPage() {
       <div className="w-full max-w-sm text-center">
 
         <Link href="/" className="inline-block mb-6">
-          <Image src="/paxxora.png" alt="Paxxora" width={52} height={52} />
+          <Image src="/paxxora.svg" alt="Paxxora" width={52} height={52} />
         </Link>
 
         <h1 className="text-2xl font-semibold text-black tracking-tight mb-1">
