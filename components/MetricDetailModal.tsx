@@ -51,6 +51,9 @@ const METRIC_LANDMARKS: Record<string, number[]> = {
   eyebrow_tilt: [17, 18, 19, 20, 28, 29, 30, 31],
   jaw_slope: [51, 45, 47, 52, 46, 48],
   iaa_jfa_deviation: [16, 27, 35, 45, 46, 47, 48],
+  ear_protrusion_ratio: [8, 9, 51, 52],
+  ear_protrusion_angle: [8, 9, 42, 51, 52],
+  mouth_corner_position: [38, 39, 42],
 };
 
 const LANDMARK_NAMES: Record<number, string> = {
