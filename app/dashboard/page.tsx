@@ -20,8 +20,9 @@ export default async function DashboardPage() {
   return (
     <div className="min-h-screen bg-[#f7f7f5] flex flex-col">
       <header className="flex items-center justify-between px-8 py-6">
-        <Link href="/" className="text-lg font-semibold text-black tracking-tight">
-          Paxxora
+        <Link href="/" className="flex items-center gap-2">
+          <img src="/paxxora.svg" alt="Paxxora" className="h-7 w-7 object-contain" />
+          <span className="text-lg font-semibold text-black tracking-tight">Paxxora</span>
         </Link>
         <div className="flex items-center gap-4">
           <span className="text-sm text-zinc-400">{user.email}</span>
