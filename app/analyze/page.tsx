@@ -194,7 +194,7 @@ export default function Home() {
   }
 
   if (state === "results" && result) {
-    return <ResultsDisplay result={result} onReset={handleReset} />;
+    return <ResultsDisplay result={result} onReset={handleReset} onResultUpdate={(updated) => setResult(updated)} />;
   }
 
   return (
