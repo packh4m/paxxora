@@ -17,8 +17,8 @@ interface MetricDetailModalProps {
 }
 
 const LINE_COLOR = "#00CED1";
-const LINE_COLOR_SECONDARY = "#00CED180";
-const LINE_WIDTH = 0.4;
+const LINE_COLOR_SECONDARY = "rgba(0,206,209,0.5)";
+const LINE_WIDTH = 2;
 
 export default function MetricDetailModal({
   metric,
@@ -41,12 +41,7 @@ export default function MetricDetailModal({
     return { x: 0, y: 0 };
   }, [landmarks]);
 
-  const toPercent = useCallback((p: Point) => ({
-    x: (p.x / imageWidth) * 100,
-    y: (p.y / imageHeight) * 100,
-  }), [imageWidth, imageHeight]);
-
-  const midpoint = (p1: Point, p2: Point): Point => ({
+  const mid = (p1: Point, p2: Point): Point => ({
     x: (p1.x + p2.x) / 2,
     y: (p1.y + p2.y) / 2,
   });
@@ -57,141 +52,109 @@ export default function MetricDetailModal({
     const unit = metric.definition.unit;
     const valueStr = value !== null ? `${value.toFixed(unit === "x" ? 2 : 1)}${unit}` : "";
     const elements: JSX.Element[] = [];
-    let lineKey = 0;
+    let k = 0;
 
-    const addLine = (p1: Point, p2: Point, secondary = false) => {
-      const pct1 = toPercent(p1);
-      const pct2 = toPercent(p2);
+    const line = (p1: Point, p2: Point, secondary = false) => {
       elements.push(
-        <line key={`line-${lineKey++}`} x1={pct1.x} y1={pct1.y} x2={pct2.x} y2={pct2.y}
-          stroke={secondary ? LINE_COLOR_SECONDARY : LINE_COLOR} strokeWidth={LINE_WIDTH} strokeLinecap="round" />
+        <line key={`l${k++}`} x1={p1.x} y1={p1.y} x2={p2.x} y2={p2.y}
+          stroke={secondary ? LINE_COLOR_SECONDARY : LINE_COLOR}
+          strokeWidth={LINE_WIDTH} strokeLinecap="round" />
       );
     };
 
-    const addPoint = (p: Point, radius = 0.5) => {
-      const pct = toPercent(p);
-      elements.push(<circle key={`point-${lineKey++}`} cx={pct.x} cy={pct.y} r={radius} fill={LINE_COLOR} />);
+    const dot = (p: Point, r = 4) => {
+      elements.push(<circle key={`d${k++}`} cx={p.x} cy={p.y} r={r} fill={LINE_COLOR} />);
     };
 
-    const addLabel = (text: string, p: Point, offsetY = -3) => {
-      const pct = toPercent(p);
+    const label = (text: string, p: Point, offsetY = -12) => {
       elements.push(
-        <g key={`label-${lineKey++}`}>
-          <rect x={pct.x - 6} y={pct.y + offsetY - 2} width={12} height={4} fill="rgba(0,0,0,0.7)" rx={1} />
-          <text x={pct.x} y={pct.y + offsetY} fill="white" fontSize="2.5" textAnchor="middle"
+        <g key={`lb${k++}`}>
+          <rect x={p.x - 20} y={p.y + offsetY - 8} width={40} height={16} fill="rgba(0,0,0,0.7)" rx={4} />
+          <text x={p.x} y={p.y + offsetY} fill="white" fontSize="11" textAnchor="middle"
             dominantBaseline="middle" fontFamily="system-ui, sans-serif" fontWeight="500">{text}</text>
         </g>
       );
     };
 
-    const addAngleArc = (center: Point, p1: Point, p2: Point, radius = 15) => {
-      const pctC = toPercent(center);
-      const angle1 = Math.atan2(p1.y - center.y, p1.x - center.x);
-      const angle2 = Math.atan2(p2.y - center.y, p2.x - center.x);
-      const r = (radius / imageWidth) * 100;
-      const aspectRatio = imageWidth / imageHeight;
-      const x1 = pctC.x + r * Math.cos(angle1);
-      const y1 = pctC.y + r * Math.sin(angle1) * aspectRatio;
-      const x2 = pctC.x + r * Math.cos(angle2);
-      const y2 = pctC.y + r * Math.sin(angle2) * aspectRatio;
-      const largeArc = Math.abs(angle2 - angle1) > Math.PI ? 1 : 0;
-      const sweep = angle2 > angle1 ? 1 : 0;
-      elements.push(
-        <path key={`arc-${lineKey++}`} d={`M ${x1} ${y1} A ${r} ${r * aspectRatio} 0 ${largeArc} ${sweep} ${x2} ${y2}`}
-          stroke={LINE_COLOR} strokeWidth={LINE_WIDTH} fill="none" />
-      );
-    };
-
     switch (metricId) {
-      case "nose_bridge_width": addLine(L(36), L(37)); addLine(L(4), L(5)); addPoint(L(36)); addPoint(L(37)); addPoint(L(4)); addPoint(L(5)); addLabel(valueStr, midpoint(L(36), L(37))); break;
-      case "lower_third": addLine(L(35), L(7)); addPoint(L(35)); addPoint(L(7)); addLabel(valueStr, midpoint(L(35), L(7)), 5); break;
-      case "lip_ratio": addLine(L(40), L(42)); addLine(L(42), L(6)); addPoint(L(40)); addPoint(L(42)); addPoint(L(6)); addLabel(valueStr, L(42), 15); break;
-      case "chin_philtrum": addLine(L(35), L(42)); addLine(L(42), L(7)); addPoint(L(35)); addPoint(L(42)); addPoint(L(7)); addLabel(valueStr, midpoint(L(42), L(7)), 5); break;
-      case "canthal_tilt": addLine(L(12), L(13)); addLine(L(23), L(24)); addPoint(L(12)); addPoint(L(13)); addPoint(L(23)); addPoint(L(24)); addLabel(valueStr, midpoint(L(12), L(13)), -12); break;
-      case "midface_ratio": addLine(L(2), L(3)); addLine(L(34), L(35)); addPoint(L(2)); addPoint(L(3)); addPoint(L(34)); addPoint(L(35)); addLabel(valueStr, midpoint(L(2), L(3)), -12); break;
-      case "cupids_bow_depth": addLine(L(40), L(41)); addPoint(L(40)); addPoint(L(41)); addLabel(valueStr, L(41), 12); break;
-      case "top_third": { const g = midpoint(L(18), L(29)); addLine(L(1), g); addPoint(L(1)); addPoint(g); addLabel(valueStr, midpoint(L(1), g), 5); break; }
-      case "face_width_height": { addLine(L(51), L(52)); addPoint(L(51)); addPoint(L(52)); const m = midpoint(L(51), L(52)); addLabel(valueStr, m, -5); break; }
-      case "brow_eye_distance": addLine(L(20), L(14)); addLine(L(31), L(25), true); addPoint(L(20)); addPoint(L(14)); addPoint(L(31)); addPoint(L(25)); addLabel(valueStr, midpoint(L(20), L(14)), 5); break;
-      case "total_face_width_height": addLine(L(51), L(52)); addLine(L(1), L(7)); addPoint(L(51)); addPoint(L(52)); addPoint(L(1)); addPoint(L(7)); addLabel(valueStr, midpoint(L(51), L(52)), -12); break;
-      case "eye_separation": addLine(L(2), L(3)); addLine(L(51), L(52), true); addPoint(L(2)); addPoint(L(3)); addPoint(L(51)); addPoint(L(52)); addLabel(valueStr, midpoint(L(2), L(3)), -12); break;
-      case "middle_third": { const g = midpoint(L(18), L(29)); addLine(g, L(35)); addPoint(g); addPoint(L(35)); addLabel(valueStr, midpoint(g, L(35)), 5); break; }
-      case "bigonial_width": addLine(L(43), L(44)); addLine(L(51), L(52), true); addPoint(L(43)); addPoint(L(44)); addPoint(L(51)); addPoint(L(52)); addLabel(valueStr, midpoint(L(43), L(44)), 12); break;
-      case "lower_third_proportion": addLine(L(35), L(42)); addLine(L(42), L(7), true); addPoint(L(35)); addPoint(L(42)); addPoint(L(7)); addLabel(valueStr, midpoint(L(35), L(42)), 5); break;
-      case "mouth_nose_ratio": addLine(L(38), L(39)); addLine(L(4), L(5), true); addPoint(L(38)); addPoint(L(39)); addPoint(L(4)); addPoint(L(5)); addLabel(valueStr, midpoint(L(38), L(39)), 12); break;
-      case "jaw_frontal_angle": addLine(L(45), L(47)); addLine(L(46), L(47)); addPoint(L(45)); addPoint(L(46)); addPoint(L(47)); addAngleArc(L(47), L(45), L(46), 25); addLabel(valueStr, L(47), 35); break;
-      case "alar_angle": addLine(L(4), L(35)); addLine(L(5), L(35)); addPoint(L(4)); addPoint(L(5)); addPoint(L(35)); addAngleArc(L(35), L(4), L(5), 20); addLabel(valueStr, L(35), 30); break;
-      case "neck_width": addLine(L(49), L(50)); addLine(L(51), L(52), true); addPoint(L(49)); addPoint(L(50)); addPoint(L(51)); addPoint(L(52)); addLabel(valueStr, midpoint(L(49), L(50)), 12); break;
-      case "bitemporal_width": addLine(L(10), L(11)); addLine(L(51), L(52), true); addPoint(L(10)); addPoint(L(11)); addPoint(L(51)); addPoint(L(52)); addLabel(valueStr, midpoint(L(10), L(11)), -12); break;
-      case "intercanthal_nasal": addLine(L(12), L(23)); addLine(L(4), L(5), true); addPoint(L(12)); addPoint(L(23)); addPoint(L(4)); addPoint(L(5)); addLabel(valueStr, midpoint(L(12), L(23)), -12); break;
-      case "ipd_mouth_ratio": addLine(L(2), L(3)); addLine(L(38), L(39), true); addPoint(L(2)); addPoint(L(3)); addPoint(L(38)); addPoint(L(39)); addLabel(valueStr, midpoint(L(2), L(3)), -12); break;
-      case "brow_length_ratio": addLine(L(18), L(21)); addLine(L(29), L(32)); addLine(L(51), L(52), true); addPoint(L(18)); addPoint(L(21)); addPoint(L(29)); addPoint(L(32)); addPoint(L(51)); addPoint(L(52)); addLabel(valueStr, midpoint(L(18), L(21)), -12); break;
+      case "nose_bridge_width": line(L(36), L(37)); line(L(4), L(5)); dot(L(36)); dot(L(37)); dot(L(4)); dot(L(5)); label(valueStr, mid(L(36), L(37))); break;
+      case "lower_third": line(L(35), L(7)); dot(L(35)); dot(L(7)); label(valueStr, mid(L(35), L(7)), 16); break;
+      case "lip_ratio": line(L(40), L(42)); line(L(42), L(6)); dot(L(40)); dot(L(42)); dot(L(6)); label(valueStr, L(42), 20); break;
+      case "chin_philtrum": line(L(35), L(42)); line(L(42), L(7)); dot(L(35)); dot(L(42)); dot(L(7)); label(valueStr, mid(L(42), L(7)), 16); break;
+      case "canthal_tilt": line(L(12), L(13)); line(L(23), L(24)); dot(L(12)); dot(L(13)); dot(L(23)); dot(L(24)); label(valueStr, mid(L(12), L(13)), -14); break;
+      case "midface_ratio": line(L(2), L(3)); line(L(34), L(35)); dot(L(2)); dot(L(3)); dot(L(34)); dot(L(35)); label(valueStr, mid(L(2), L(3)), -14); break;
+      case "cupids_bow_depth": line(L(40), L(41)); dot(L(40)); dot(L(41)); label(valueStr, L(41), 16); break;
+      case "top_third": { const g = mid(L(18), L(29)); line(L(1), g); dot(L(1)); dot(g); label(valueStr, mid(L(1), g), 16); break; }
+      case "face_width_height": line(L(51), L(52)); dot(L(51)); dot(L(52)); label(valueStr, mid(L(51), L(52)), -14); break;
+      case "brow_eye_distance": line(L(20), L(14)); line(L(31), L(25), true); dot(L(20)); dot(L(14)); dot(L(31)); dot(L(25)); label(valueStr, mid(L(20), L(14)), 16); break;
+      case "total_face_width_height": line(L(51), L(52)); line(L(1), L(7)); dot(L(51)); dot(L(52)); dot(L(1)); dot(L(7)); label(valueStr, mid(L(51), L(52)), -14); break;
+      case "eye_separation": line(L(2), L(3)); line(L(51), L(52), true); dot(L(2)); dot(L(3)); dot(L(51)); dot(L(52)); label(valueStr, mid(L(2), L(3)), -14); break;
+      case "middle_third": { const g = mid(L(18), L(29)); line(g, L(35)); dot(g); dot(L(35)); label(valueStr, mid(g, L(35)), 16); break; }
+      case "bigonial_width": line(L(43), L(44)); line(L(51), L(52), true); dot(L(43)); dot(L(44)); dot(L(51)); dot(L(52)); label(valueStr, mid(L(43), L(44)), 16); break;
+      case "lower_third_proportion": line(L(35), L(42)); line(L(42), L(7), true); dot(L(35)); dot(L(42)); dot(L(7)); label(valueStr, mid(L(35), L(42)), 16); break;
+      case "mouth_nose_ratio": line(L(38), L(39)); line(L(4), L(5), true); dot(L(38)); dot(L(39)); dot(L(4)); dot(L(5)); label(valueStr, mid(L(38), L(39)), 16); break;
+      case "jaw_frontal_angle": {
+        line(L(45), L(47)); line(L(46), L(48));
+        dot(L(45)); dot(L(46)); dot(L(47)); dot(L(48));
+        label(valueStr, mid(L(45), L(47)), 16);
+        break;
+      }
+      case "alar_angle": line(L(4), L(35)); line(L(5), L(35)); dot(L(4)); dot(L(5)); dot(L(35)); label(valueStr, L(35), 20); break;
+      case "neck_width": line(L(49), L(50)); line(L(51), L(52), true); dot(L(49)); dot(L(50)); dot(L(51)); dot(L(52)); label(valueStr, mid(L(49), L(50)), 16); break;
+      case "bitemporal_width": line(L(10), L(11)); line(L(51), L(52), true); dot(L(10)); dot(L(11)); dot(L(51)); dot(L(52)); label(valueStr, mid(L(10), L(11)), -14); break;
+      case "intercanthal_nasal": line(L(12), L(23)); line(L(4), L(5), true); dot(L(12)); dot(L(23)); dot(L(4)); dot(L(5)); label(valueStr, mid(L(12), L(23)), -14); break;
+      case "ipd_mouth_ratio": line(L(2), L(3)); line(L(38), L(39), true); dot(L(2)); dot(L(3)); dot(L(38)); dot(L(39)); label(valueStr, mid(L(2), L(3)), -14); break;
+      case "brow_length_ratio": line(L(18), L(21)); line(L(29), L(32)); line(L(51), L(52), true); dot(L(18)); dot(L(21)); dot(L(29)); dot(L(32)); dot(L(51)); dot(L(52)); label(valueStr, mid(L(18), L(21)), -14); break;
       case "cheekbone_height": {
         const eyeY = (L(13).y + L(24).y) / 2;
-        addLine({ x: L(13).x, y: eyeY }, { x: L(24).x, y: eyeY }, true);
+        line({ x: L(13).x, y: eyeY }, { x: L(24).x, y: eyeY }, true);
         const cheekY = (L(51).y + L(52).y) / 2;
-        addLine({ x: L(51).x, y: cheekY }, { x: L(52).x, y: cheekY });
-        addPoint(L(51)); addPoint(L(52)); addPoint(L(13)); addPoint(L(24));
-        addLabel(valueStr, { x: L(52).x + 2, y: cheekY }, 0);
+        line({ x: L(51).x, y: cheekY }, { x: L(52).x, y: cheekY });
+        dot(L(51)); dot(L(52)); dot(L(13)); dot(L(24));
+        label(valueStr, { x: (L(51).x + L(52).x) / 2, y: cheekY }, -14);
         break;
       }
       case "eye_aspect_ratio": {
-        const lY = (L(13).y + L(12).y) / 2;
-        addLine({ x: L(13).x, y: lY }, { x: L(12).x, y: lY });
-        const rY = (L(23).y + L(24).y) / 2;
-        addLine({ x: L(23).x, y: rY }, { x: L(24).x, y: rY });
         const lX = (L(12).x + L(13).x) / 2;
-        addLine({ x: lX, y: L(14).y }, { x: lX, y: L(15).y });
+        line({ x: L(13).x, y: (L(13).y + L(12).y) / 2 }, { x: L(12).x, y: (L(12).y + L(13).y) / 2 });
+        line({ x: lX, y: L(14).y }, { x: lX, y: L(15).y });
         const rX = (L(23).x + L(24).x) / 2;
-        addLine({ x: rX, y: L(25).y }, { x: rX, y: L(26).y });
-        addPoint(L(12)); addPoint(L(13)); addPoint(L(14)); addPoint(L(15));
-        addPoint(L(23)); addPoint(L(24)); addPoint(L(25)); addPoint(L(26));
-        const lW = Math.abs(L(12).x - L(13).x); const lH = Math.abs(L(14).y - L(15).y);
-        const rW = Math.abs(L(24).x - L(23).x); const rH = Math.abs(L(25).y - L(26).y);
-        addLabel(`${lH > 0 ? (lW / lH).toFixed(2) : "—"}x`, { x: lX, y: L(15).y }, 15);
-        addLabel(`${rH > 0 ? (rW / rH).toFixed(2) : "—"}x`, { x: rX, y: L(26).y }, 15);
+        line({ x: L(23).x, y: (L(23).y + L(24).y) / 2 }, { x: L(24).x, y: (L(24).y + L(23).y) / 2 });
+        line({ x: rX, y: L(25).y }, { x: rX, y: L(26).y });
+        dot(L(12)); dot(L(13)); dot(L(14)); dot(L(15));
+        dot(L(23)); dot(L(24)); dot(L(25)); dot(L(26));
+        label(valueStr, { x: lX, y: L(15).y }, 16);
         break;
       }
       case "eyebrow_tilt": {
-        const ls = { x: (L(17).x + L(18).x) / 2, y: (L(17).y + L(18).y) / 2 };
-        const le = { x: (L(19).x + L(20).x) / 2, y: (L(19).y + L(20).y) / 2 };
-        addLine(ls, le); addPoint(ls); addPoint(le);
-        const rs = { x: (L(28).x + L(29).x) / 2, y: (L(28).y + L(29).y) / 2 };
-        const re = { x: (L(30).x + L(31).x) / 2, y: (L(30).y + L(31).y) / 2 };
-        addLine(rs, re); addPoint(rs); addPoint(re);
-        const lT = Math.atan2(ls.y - le.y, Math.abs(le.x - ls.x)) * (180 / Math.PI);
-        const rT = Math.atan2(rs.y - re.y, Math.abs(re.x - rs.x)) * (180 / Math.PI);
-        addLabel(`${lT.toFixed(1)}°`, midpoint(ls, le), 15);
-        addLabel(`${rT.toFixed(1)}°`, midpoint(rs, re), 15);
+        const ls = mid(L(17), L(18));
+        const le = mid(L(19), L(20));
+        line(ls, le); dot(ls); dot(le);
+        const rs = mid(L(28), L(29));
+        const re = mid(L(30), L(31));
+        line(rs, re); dot(rs); dot(re);
+        label(valueStr, mid(ls, le), -14);
         break;
       }
       case "jaw_slope": {
-        addLine(L(51), L(45)); addLine(L(45), L(47));
-        addLine(L(52), L(46)); addLine(L(46), L(48));
-        addPoint(L(51)); addPoint(L(45)); addPoint(L(47));
-        addPoint(L(52)); addPoint(L(46)); addPoint(L(48));
-        const lV = (metric as any).jawSlopeLeft?.toFixed(1) ?? "—";
-        const rV = (metric as any).jawSlopeRight?.toFixed(1) ?? "—";
-        addLabel(`${lV}°`, L(45), -15);
-        addLabel(`${rV}°`, L(46), -15);
+        line(L(51), L(45)); line(L(45), L(47));
+        line(L(52), L(46)); line(L(46), L(48));
+        dot(L(51)); dot(L(45)); dot(L(47));
+        dot(L(52)); dot(L(46)); dot(L(48));
+        label(valueStr, L(45), -14);
         break;
       }
       case "iaa_jfa_deviation": {
-        addLine(L(16), L(35)); addLine(L(27), L(35));
-        addPoint(L(16)); addPoint(L(27)); addPoint(L(35));
-        addAngleArc(L(35), L(16), L(27), 20);
-        const x1 = L(45).x, y1 = L(45).y, x2 = L(47).x, y2 = L(47).y;
-        const x3 = L(46).x, y3 = L(46).y, x4 = L(48).x, y4 = L(48).y;
-        const denom = (x1-x2)*(y3-y4) - (y1-y2)*(x3-x4);
-        const t = ((x1-x3)*(y3-y4) - (y1-y3)*(x3-x4)) / denom;
-        const apex = { x: x1 + t*(x2-x1), y: y1 + t*(y2-y1) };
-        addLine(L(45), apex, true); addLine(L(46), apex, true);
-        addPoint(L(45)); addPoint(L(46)); addPoint(L(47)); addPoint(L(48));
-        addAngleArc(apex, L(45), L(46), 20);
-        addLabel(valueStr, midpoint(L(35), apex), 0);
+        line(L(16), L(35)); line(L(27), L(35));
+        dot(L(16)); dot(L(27)); dot(L(35));
+        line(L(45), L(47)); line(L(46), L(48));
+        dot(L(45)); dot(L(46)); dot(L(47)); dot(L(48));
+        label(valueStr, L(35), -14);
         break;
       }
-      default: addLabel(valueStr, { x: imageWidth / 2, y: imageHeight / 2 }); break;
+      default:
+        label(valueStr, { x: imageWidth / 2, y: imageHeight / 2 });
+        break;
     }
 
     return elements;
@@ -233,7 +196,7 @@ export default function MetricDetailModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.5)", backdropFilter: "blur(8px)" }}>
 
-      {/* Prev arrow */}
+      {/* Prev */}
       <button onClick={handlePrev} disabled={detectableIndex === 0}
         className={`absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white border border-zinc-200 shadow flex items-center justify-center transition-all ${detectableIndex === 0 ? "opacity-30 cursor-not-allowed" : "hover:shadow-md"}`}>
         <svg className="w-5 h-5 text-zinc-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -241,7 +204,7 @@ export default function MetricDetailModal({
         </svg>
       </button>
 
-      {/* Next arrow */}
+      {/* Next */}
       <button onClick={handleNext} disabled={detectableIndex === detectableMetrics.length - 1}
         className={`absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white border border-zinc-200 shadow flex items-center justify-center transition-all ${detectableIndex === detectableMetrics.length - 1 ? "opacity-30 cursor-not-allowed" : "hover:shadow-md"}`}>
         <svg className="w-5 h-5 text-zinc-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -268,13 +231,24 @@ export default function MetricDetailModal({
         {/* Body */}
         <div className="flex flex-col md:flex-row" style={{ maxHeight: "75vh" }}>
 
-          {/* Left — photo */}
-          <div className="flex-1 bg-zinc-900 flex items-center justify-center overflow-hidden" style={{ minHeight: 300 }}>
+          {/* Left — photo with SVG overlay using actual image dimensions */}
+          <div className="flex-1 bg-zinc-900 flex items-center justify-center overflow-hidden relative" style={{ minHeight: 300 }}>
             <div className="relative w-full h-full flex items-center justify-center p-4">
-              <img src={imageUrl} alt="Face analysis" className="max-w-full max-h-full object-contain" style={{ maxHeight: "65vh", opacity: 0.9 }} />
-              <svg className="absolute top-0 left-0 w-full h-full pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none">
-                {renderMeasurementLines()}
-              </svg>
+              <div className="relative inline-block">
+                <img
+                  src={imageUrl}
+                  alt="Face analysis"
+                  className="max-w-full object-contain"
+                  style={{ maxHeight: "65vh", opacity: 0.9, display: "block" }}
+                />
+                <svg
+                  className="absolute top-0 left-0 w-full h-full pointer-events-none"
+                  viewBox={`0 0 ${imageWidth} ${imageHeight}`}
+                  preserveAspectRatio="none"
+                >
+                  {renderMeasurementLines()}
+                </svg>
+              </div>
             </div>
           </div>
 
@@ -291,7 +265,6 @@ export default function MetricDetailModal({
               </div>
               <p className="text-xs text-zinc-400">{getScoreLabel(metric.score ?? 0)}</p>
 
-              {/* Gradient bar */}
               <div className="mt-3">
                 <div className="relative h-2 rounded-full overflow-hidden" style={{
                   background: "linear-gradient(to right, #ef4444, #f97316, #eab308, #22c55e, #22c55e, #eab308, #f97316, #ef4444)"
@@ -307,7 +280,7 @@ export default function MetricDetailModal({
               </div>
             </div>
 
-            {/* Measurement */}
+            {/* Value */}
             <div className="px-5 py-4 border-b border-zinc-100">
               <p className="text-xs text-zinc-400 mb-1 uppercase tracking-widest font-mono">Your Value</p>
               <p className="text-2xl font-semibold text-black">{metric.displayValue ?? "—"}</p>
@@ -316,7 +289,7 @@ export default function MetricDetailModal({
               </p>
             </div>
 
-            {/* About */}
+            {/* Description */}
             <div className="px-5 py-4 border-b border-zinc-100">
               <p className="text-xs text-zinc-400 mb-2 uppercase tracking-widest font-mono">About this ratio</p>
               <p className="text-sm text-zinc-600 leading-relaxed">{metric.definition.description}</p>
