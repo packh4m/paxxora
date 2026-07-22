@@ -1,4 +1,4 @@
-"use client";
+p"use client";
 
 import { useState, useMemo } from "react";
 import { AnalysisResult, MetricCategory, MetricResult, VISION_METRIC_LABELS } from "@/lib/types";
@@ -229,7 +229,10 @@ export default function ResultsDisplay({ result, onReset }: ResultsDisplayProps)
     <div className="flex flex-col bg-[#f7f7f5]" style={{ height: "100vh", overflow: "hidden" }}>
       <header className="flex-shrink-0 bg-white border-b border-zinc-200 z-10">
         <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
-          <Link href="/dashboard" className="text-lg font-semibold text-black tracking-tight">Paxxora</Link>
+          <Link href="/dashboard" className="flex items-center gap-2">
+            <img src="/paxxora.svg" alt="Paxxora" className="h-7 w-7 object-contain" />
+            <span className="text-lg font-semibold text-black tracking-tight">Paxxora</span>
+          </Link>
           <div className="flex items-center gap-1">
             {tabs.map(tab => (
               <button key={tab.id} onClick={() => setActiveTab(tab.id)}
