@@ -1,4 +1,4 @@
-p"use client";
+"use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Point } from "@/lib/types";
