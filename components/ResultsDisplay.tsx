@@ -209,6 +209,37 @@ export default function ResultsDisplay({ result, onReset }: ResultsDisplayProps)
 
   const activeScore = tabs.find(t => t.id === activeTab)?.score ?? 0;
 
+  const sortedHarmonyMetrics = useMemo(() =>
+    harmonyMetrics.flatMap(({ metrics }) => metrics)
+      .filter(m => m.score !== null)
+      .sort((a, b) => (a.score ?? 0) - (b.score ?? 0)),
+    [harmonyMetrics]
+  );
+
+  const sortedFeaturesMetrics = useMemo(() =>
+    featuresMetrics.flatMap(({ metrics }) => metrics)
+      .filter(m => m.score !== null)
+      .sort((a, b) => (a.score ?? 0) - (b.score ?? 0)),
+    [featuresMetrics]
+  );
+
+  const sortedAngularityEntries = useMemo(() =>
+    Object.entries(angularitySubScores).sort((a, b) => a[1] - b[1]),
+    [angularitySubScores]
+  );
+
+  const sortedDimorphismGeoEntries = useMemo(() =>
+    Object.entries(dimorphismSubScores).sort((a, b) => a[1] - b[1]),
+    [dimorphismSubScores]
+  );
+
+  const sortedDimorphismVisionKeys = useMemo(() => {
+    if (!result.visionScores) return [];
+    return [...ALL_DIMORPHISM_VISION_KEYS]
+      .filter(key => result.visionScores![key] !== undefined)
+      .sort((a, b) => (result.visionScores![a] as number) - (result.visionScores![b] as number));
+  }, [result.visionScores]);
+
   return (
     <div className="flex flex-col bg-[#f7f7f5]" style={{ height: "100vh", overflow: "hidden" }}>
       <header className="flex-shrink-0 bg-white border-b border-zinc-200 z-10">
@@ -287,47 +318,41 @@ export default function ResultsDisplay({ result, onReset }: ResultsDisplayProps)
           <div className="flex-shrink-0 px-6 py-3 border-b border-zinc-100 flex items-center justify-between">
             <p className="text-sm font-semibold text-black">Your {tabs.find(t => t.id === activeTab)?.label} ratios</p>
             <p className="text-xs text-zinc-400">
-              {activeTab === "harmony" ? harmonyMetrics.flatMap(c => c.metrics).filter(m => m.score !== null).length :
-               activeTab === "features" ? featuresMetrics.flatMap(c => c.metrics).filter(m => m.score !== null).length :
-               activeTab === "angularity" ? Object.keys(angularitySubScores).length :
-               Object.keys(dimorphismSubScores).length + (result.visionScores ? ALL_DIMORPHISM_VISION_KEYS.length : 0)} metrics
+              {activeTab === "harmony" ? sortedHarmonyMetrics.length :
+               activeTab === "features" ? sortedFeaturesMetrics.length :
+               activeTab === "angularity" ? sortedAngularityEntries.length :
+               sortedDimorphismGeoEntries.length + sortedDimorphismVisionKeys.length} metrics
             </p>
           </div>
 
           <div className="flex-1 overflow-y-auto">
-            {activeTab === "harmony" && harmonyMetrics.flatMap(({ metrics }) => metrics).map(metric =>
-              metric.score !== null && (
-                <MetricRow key={metric.definition.id} name={metric.definition.name}
-                  value={metric.value !== null ? String(metric.value.toFixed(2)) : undefined}
-                  score={metric.score} onClick={() => handleMetricClick(metric.definition.id)} />
-              )
-            )}
+            {activeTab === "harmony" && sortedHarmonyMetrics.map(metric => (
+              <MetricRow key={metric.definition.id} name={metric.definition.name}
+                value={metric.value !== null ? String(metric.value.toFixed(2)) : undefined}
+                score={metric.score!} onClick={() => handleMetricClick(metric.definition.id)} />
+            ))}
 
-            {activeTab === "features" && featuresMetrics.flatMap(({ metrics }) => metrics).map(metric =>
-              metric.score !== null && (
-                <MetricRow key={metric.definition.id} name={metric.definition.name}
-                  value={metric.value !== null ? String(metric.value.toFixed(2)) : undefined}
-                  score={metric.score} onClick={() => handleMetricClick(metric.definition.id)} />
-              )
-            )}
+            {activeTab === "features" && sortedFeaturesMetrics.map(metric => (
+              <MetricRow key={metric.definition.id} name={metric.definition.name}
+                value={metric.value !== null ? String(metric.value.toFixed(2)) : undefined}
+                score={metric.score!} onClick={() => handleMetricClick(metric.definition.id)} />
+            ))}
 
-            {activeTab === "angularity" && Object.entries(angularitySubScores).map(([name, score]) => (
+            {activeTab === "angularity" && sortedAngularityEntries.map(([name, score]) => (
               <MetricRow key={name} name={name} score={score} onClick={() => handleAngularityClick(name, score)} />
             ))}
 
             {activeTab === "dimorphism" && (
               <>
-                {Object.entries(dimorphismSubScores).map(([name, score]) => (
+                {sortedDimorphismGeoEntries.map(([name, score]) => (
                   <MetricRow key={name} name={name} score={score} onClick={() => handleDimorphismGeoClick(name, score)} />
                 ))}
                 {result.visionScores ? (
-                  ALL_DIMORPHISM_VISION_KEYS.map(key =>
-                    result.visionScores![key] !== undefined && (
-                      <MetricRow key={key} name={VISION_METRIC_LABELS[key]}
-                        score={result.visionScores![key] as number}
-                        onClick={() => handleDimorphismVisionClick(key, result.visionScores![key] as number)} />
-                    )
-                  )
+                  sortedDimorphismVisionKeys.map(key => (
+                    <MetricRow key={key} name={VISION_METRIC_LABELS[key]}
+                      score={result.visionScores![key] as number}
+                      onClick={() => handleDimorphismVisionClick(key, result.visionScores![key] as number)} />
+                  ))
                 ) : !result.visionError && (
                   <div className="flex items-center gap-3 p-6">
                     <svg className="w-5 h-5 text-zinc-400 animate-spin" fill="none" viewBox="0 0 24 24">
