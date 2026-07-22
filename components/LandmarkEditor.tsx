@@ -71,25 +71,27 @@ export default function LandmarkEditor({
 
       const x = p.x * scaleX;
       const y = p.y * scaleY;
-      const radius = (isActive ? 3 : 2) / multiplier;
+
+      // Fixed screen size regardless of zoom
+      const radius = isActive ? 4 : 3;
 
       ctx.beginPath();
       ctx.arc(x, y, radius, 0, Math.PI * 2);
-      ctx.fillStyle = isActive ? "#ef4444" : "rgba(0, 206, 209, 0.8)";
+      ctx.fillStyle = "#22c55e";
       ctx.fill();
       ctx.strokeStyle = "#fff";
-      ctx.lineWidth = (isActive ? 1.5 : 1) / multiplier;
+      ctx.lineWidth = 1.5;
       ctx.stroke();
 
       if (isActive) {
-        ctx.font = `bold ${10 / multiplier}px system-ui, sans-serif`;
+        ctx.font = "bold 9px system-ui, sans-serif";
         ctx.fillStyle = "#fff";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        ctx.fillText(String(editingIndex), x, y - radius - 6 / multiplier);
+        ctx.fillText(String(editingIndex), x, y - radius - 5);
       }
     });
-  }, [points, editingIndex, relevantIndices, imageWidth, imageHeight, displayWidth, displayHeight, multiplier]);
+  }, [points, editingIndex, relevantIndices, imageWidth, imageHeight, displayWidth, displayHeight]);
 
   useEffect(() => { drawCanvas(); }, [drawCanvas]);
 
