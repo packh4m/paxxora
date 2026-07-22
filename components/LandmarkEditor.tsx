@@ -16,9 +16,9 @@ interface LandmarkEditorProps {
 }
 
 const ZOOM_LEVELS = [
-  { label: "1", sub: "2x", scale: 2 },
-  { label: "2", sub: "4x", scale: 4 },
-  { label: "3", sub: "8x", scale: 8 },
+  { label: "1", sub: "2x", multiplier: 1 },
+  { label: "2", sub: "4x", multiplier: 2 },
+  { label: "3", sub: "8x", multiplier: 4 },
 ];
 
 export default function LandmarkEditor({
@@ -32,45 +32,45 @@ export default function LandmarkEditor({
   onBack,
 }: LandmarkEditorProps) {
   const [points, setPoints] = useState<Point[]>([...landmarks]);
-  const [zoomIndex, setZoomIndex] = useState(1);
+  const [zoomIndex, setZoomIndex] = useState(0);
+  const [baseSize, setBaseSize] = useState<{ width: number; height: number } | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const imageRef = useRef<HTMLImageElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   const point = LANDMARK_POINTS[editingIndex - 1];
-  const zoomScale = ZOOM_LEVELS[zoomIndex].scale / 2;
+  const multiplier = ZOOM_LEVELS[zoomIndex].multiplier;
+
+  const displayWidth = baseSize ? baseSize.width * multiplier : undefined;
+  const displayHeight = baseSize ? baseSize.height * multiplier : undefined;
 
   const drawCanvas = useCallback(() => {
     const canvas = canvasRef.current;
     const image = imageRef.current;
-    if (!canvas || !image || !image.complete) return;
+    if (!canvas || !image || !image.complete || !displayWidth || !displayHeight) return;
 
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
     const dpr = window.devicePixelRatio || 1;
-    const w = image.clientWidth;
-    const h = image.clientHeight;
-    canvas.width = w * dpr;
-    canvas.height = h * dpr;
-    canvas.style.width = `${w}px`;
-    canvas.style.height = `${h}px`;
+    canvas.width = displayWidth * dpr;
+    canvas.height = displayHeight * dpr;
+    canvas.style.width = `${displayWidth}px`;
+    canvas.style.height = `${displayHeight}px`;
     ctx.scale(dpr, dpr);
-    ctx.clearRect(0, 0, w, h);
+    ctx.clearRect(0, 0, displayWidth, displayHeight);
 
-    const scaleX = w / imageWidth;
-    const scaleY = h / imageHeight;
+    const scaleX = displayWidth / imageWidth;
+    const scaleY = displayHeight / imageHeight;
 
     points.forEach((p, i) => {
       if (!p || (p.x === 0 && p.y === 0)) return;
       const isActive = i === editingIndex;
       const isRelevant = relevantIndices.includes(i);
-
       if (!isActive && !isRelevant) return;
 
       const x = p.x * scaleX;
       const y = p.y * scaleY;
-
-      // Match dot size from ManualPointPlacement
       const radius = isActive ? 6 : 4;
 
       ctx.beginPath();
@@ -81,47 +81,42 @@ export default function LandmarkEditor({
       ctx.lineWidth = isActive ? 2 : 1.5;
       ctx.stroke();
 
-      // Label number for active point
       if (isActive) {
-        ctx.font = "bold 10px Inter, system-ui, sans-serif";
+        ctx.font = "bold 10px system-ui, sans-serif";
         ctx.fillStyle = "#fff";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.fillText(String(editingIndex), x, y - radius - 8);
       }
     });
-  }, [points, editingIndex, relevantIndices, imageWidth, imageHeight]);
+  }, [points, editingIndex, relevantIndices, imageWidth, imageHeight, displayWidth, displayHeight]);
 
   useEffect(() => { drawCanvas(); }, [drawCanvas]);
 
-  useEffect(() => {
-    const timeout = setTimeout(drawCanvas, 50);
-    return () => clearTimeout(timeout);
-  }, [zoomIndex, drawCanvas]);
+  const handleImageLoad = () => {
+    const image = imageRef.current;
+    if (!image) return;
+    setBaseSize({ width: image.clientWidth, height: image.clientHeight });
+  };
 
   useEffect(() => {
-    const handleResize = () => setTimeout(drawCanvas, 100);
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, [drawCanvas]);
+    if (baseSize) drawCanvas();
+  }, [baseSize, drawCanvas]);
 
   const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
-    const image = imageRef.current;
-    if (!canvas || !image) return;
+    if (!canvas || !displayWidth || !displayHeight) return;
 
     const rect = canvas.getBoundingClientRect();
-    // Divide by zoomScale to account for CSS transform scaling
-    const clickX = (e.clientX - rect.left) / zoomScale;
-    const clickY = (e.clientY - rect.top) / zoomScale;
-    const scaleX = imageWidth / image.clientWidth;
-    const scaleY = imageHeight / image.clientHeight;
+    const clickX = e.clientX - rect.left;
+    const clickY = e.clientY - rect.top;
+
+    // Direct coordinate mapping — no zoom correction needed since canvas IS the actual size
+    const imageX = (clickX / displayWidth) * imageWidth;
+    const imageY = (clickY / displayHeight) * imageHeight;
 
     const newPoints = [...points];
-    newPoints[editingIndex] = {
-      x: clickX * scaleX,
-      y: clickY * scaleY,
-    };
+    newPoints[editingIndex] = { x: imageX, y: imageY };
     setPoints(newPoints);
   };
 
@@ -138,21 +133,36 @@ export default function LandmarkEditor({
         default: return;
       }
       e.preventDefault();
-      // Fine-tune at 1px in screen space, divided by zoom for accuracy
+      // 1px in image space regardless of zoom
       const newPoints = [...points];
       newPoints[editingIndex] = {
-        x: Math.max(0, Math.min(imageWidth, current.x + dx / zoomScale)),
-        y: Math.max(0, Math.min(imageHeight, current.y + dy / zoomScale)),
+        x: Math.max(0, Math.min(imageWidth, current.x + dx)),
+        y: Math.max(0, Math.min(imageHeight, current.y + dy)),
       };
       setPoints(newPoints);
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [points, editingIndex, imageWidth, imageHeight, zoomScale]);
+  }, [points, editingIndex, imageWidth, imageHeight]);
+
+  // Auto-scroll to active point when zoom changes
+  useEffect(() => {
+    const current = points[editingIndex];
+    const scroll = scrollRef.current;
+    if (!current || !scroll || !displayWidth || !displayHeight) return;
+
+    const x = (current.x / imageWidth) * displayWidth;
+    const y = (current.y / imageHeight) * displayHeight;
+
+    scroll.scrollTo({
+      left: x - scroll.clientWidth / 2,
+      top: y - scroll.clientHeight / 2,
+      behavior: "smooth",
+    });
+  }, [zoomIndex, displayWidth, displayHeight]);
 
   return (
     <div className="fixed inset-0 z-[60] bg-[#f7f7f5] flex">
-      {/* Left — photo */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Header */}
         <div className="flex-shrink-0 px-6 py-4 bg-white border-b border-zinc-200 flex items-center gap-4">
@@ -175,13 +185,15 @@ export default function LandmarkEditor({
           </button>
         </div>
 
-        {/* Image canvas */}
-        <div className="flex-1 overflow-auto flex items-center justify-center bg-zinc-100 p-4">
+        {/* Scrollable image area */}
+        <div ref={scrollRef} className="flex-1 overflow-auto bg-zinc-100">
           <div
             className="relative"
             style={{
-              transform: `scale(${zoomScale})`,
-              transformOrigin: "center center",
+              width: displayWidth ?? "100%",
+              height: displayHeight ?? "100%",
+              minWidth: displayWidth,
+              minHeight: displayHeight,
             }}
           >
             <img
@@ -189,8 +201,14 @@ export default function LandmarkEditor({
               src={imageUrl}
               alt="Edit landmark"
               className="select-none block"
-              style={{ maxWidth: "800px", maxHeight: "70vh", objectFit: "contain" }}
-              onLoad={drawCanvas}
+              style={{
+                width: displayWidth ?? "auto",
+                height: displayHeight ?? "auto",
+                maxWidth: displayWidth ? "none" : "100%",
+                maxHeight: displayWidth ? "none" : "100%",
+                objectFit: "contain",
+              }}
+              onLoad={handleImageLoad}
               draggable={false}
             />
             <canvas
@@ -203,20 +221,18 @@ export default function LandmarkEditor({
 
         {/* Bottom hint */}
         <div className="flex-shrink-0 px-6 py-3 bg-white border-t border-zinc-200 text-center">
-          <p className="text-xs text-zinc-400">Click to move point · Arrow keys to fine-tune (1px)</p>
+          <p className="text-xs text-zinc-400">Click to move point · Arrow keys to fine-tune (1px) · Scroll to navigate</p>
         </div>
       </div>
 
       {/* Right sidebar */}
       <div className="w-72 flex-shrink-0 bg-white border-l border-zinc-200 flex flex-col">
-        {/* Point info */}
         <div className="px-5 py-5 border-b border-zinc-100">
           <p className="text-base font-semibold text-black mb-0.5">{point?.name}</p>
           <p className="text-xs text-zinc-400 italic mb-2">{point?.latin}</p>
           <p className="text-xs text-zinc-500 leading-relaxed">{point?.description}</p>
         </div>
 
-        {/* Reference image */}
         <div className="px-5 py-4 border-b border-zinc-100">
           <p className="text-xs font-mono uppercase tracking-widest text-zinc-400 mb-3">Reference</p>
           <div className="rounded-xl overflow-hidden border border-zinc-200 bg-zinc-50" style={{ height: 160 }}>
@@ -229,13 +245,13 @@ export default function LandmarkEditor({
           </div>
         </div>
 
-        {/* Keyboard shortcuts */}
         <div className="px-5 py-4 border-b border-zinc-100">
           <p className="text-xs font-mono uppercase tracking-widest text-zinc-400 mb-3">Keyboard shortcuts</p>
           <div className="space-y-2">
             {[
               { key: "↑ ↓ ← →", label: "Fine-tune (1px)" },
               { key: "Click", label: "Move point" },
+              { key: "Scroll", label: "Pan image" },
             ].map(({ key, label }) => (
               <div key={key} className="flex items-center justify-between">
                 <kbd className="px-2 py-0.5 bg-zinc-100 border border-zinc-200 rounded text-xs font-mono text-zinc-600">{key}</kbd>
@@ -245,7 +261,6 @@ export default function LandmarkEditor({
           </div>
         </div>
 
-        {/* Zoom */}
         <div className="px-5 py-4 border-b border-zinc-100">
           <p className="text-xs font-mono uppercase tracking-widest text-zinc-400 mb-3">Zoom level</p>
           <div className="grid grid-cols-3 gap-2">
@@ -266,7 +281,6 @@ export default function LandmarkEditor({
           </div>
         </div>
 
-        {/* Actions */}
         <div className="p-4 mt-auto flex gap-3">
           <button
             onClick={onBack}
