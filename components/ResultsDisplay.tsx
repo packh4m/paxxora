@@ -1,4 +1,3 @@
-cat > components/ResultsDisplay.tsx << 'ENDOFFILE'
 "use client";
 
 import { useState, useMemo } from "react";
@@ -48,15 +47,15 @@ const DIMORPHISM_VISION_INFO: Record<string, { description: string; why: string 
   eyebrow_thickness: { description: "AI assessment of eyebrow thickness and density.", why: "Thicker, denser eyebrows are a masculine trait linked to androgen sensitivity. They frame the eyes more strongly and contribute to a more intense, dominant expression." },
   nose_masculinity: { description: "AI assessment of overall nose masculinity.", why: "A wider, more prominent nose with a straighter bridge is a masculine feature. Nose size scales with overall facial size, which is itself a marker of androgenic development." },
   brow_ridge: { description: "AI assessment of brow ridge prominence.", why: "The supraorbital ridge is one of the most reliable skeletal markers of sexual dimorphism. Its prominence is driven by testosterone during puberty and creates the hooded, intense eye appearance associated with masculinity." },
-  hairline: { description: "AI assessment of hairline masculinity and definition.", why: "A defined, masculine hairline with temples that frame the face contributes to overall facial structure." },
-  eyes_dimorphism: { description: "AI assessment of eye masculinity — depth, hooding, and canthal tilt.", why: "Deep-set, hooded eyes with a positive canthal tilt (hunter eyes) are strongly associated with masculine attractiveness." },
-  lip_masculinity: { description: "AI assessment of lip masculinity.", why: "Thinner, less defined lips are a masculine trait. Overly full lips on a male face can feminise the appearance." },
-  face_shape_dimorphism: { description: "AI assessment of overall face shape masculinity.", why: "A square, angular face shape is driven by bone structure developed under androgenic influence." },
-  jaw_dimorphism: { description: "AI assessment of jaw masculinity specifically.", why: "The jaw is the cornerstone of male facial attractiveness. Width, squareness, and definition of the jaw directly signal testosterone exposure." },
-  hair_length: { description: "AI assessment of how masculine the hair length and style appears.", why: "Shorter hair traditionally emphasises facial structure and is associated with masculinity." },
+  hairline: { description: "AI assessment of hairline masculinity and definition.", why: "A defined, masculine hairline with temples that frame the face contributes to overall facial structure. Paradoxically, some hairline recession can signal elevated androgens in certain contexts." },
+  eyes_dimorphism: { description: "AI assessment of eye masculinity — depth, hooding, and canthal tilt.", why: "Deep-set, hooded eyes with a positive canthal tilt (hunter eyes) are strongly associated with masculine attractiveness. They convey predatory intensity and are a consistent preference in attraction research." },
+  lip_masculinity: { description: "AI assessment of lip masculinity.", why: "Thinner, less defined lips are a masculine trait. Overly full lips on a male face can feminise the appearance, while thinner lips reinforce the angular, structured look of a masculine face." },
+  face_shape_dimorphism: { description: "AI assessment of overall face shape masculinity.", why: "A square, angular face shape is driven by bone structure developed under androgenic influence. It is one of the most universally recognised markers of male attractiveness and dominance." },
+  jaw_dimorphism: { description: "AI assessment of jaw masculinity specifically.", why: "The jaw is the cornerstone of male facial attractiveness. Width, squareness, and definition of the jaw directly signal testosterone exposure and genetic quality to potential mates." },
+  hair_length: { description: "AI assessment of how masculine the hair length and style appears.", why: "Shorter hair traditionally emphasises facial structure and is associated with masculinity. Longer hair can soften facial features and reduce the perception of masculine sharpness." },
   skin_quality: { description: "AI assessment of skin clarity and smoothness.", why: "Clear, smooth skin signals health and genetic fitness. It is a universal marker of attractiveness that correlates with hormonal balance and overall physical health." },
   facial_fat: { description: "AI assessment of facial leanness.", why: "A lean face exposes underlying bone structure and enhances facial definition. Lower facial fat is strongly associated with perceived attractiveness and health in males." },
-  overall_impression: { description: "AI overall aesthetic impression based on bone structure.", why: "The overall impression captures how all facial features work together to create an attractive appearance." },
+  overall_impression: { description: "AI overall aesthetic impression based on bone structure.", why: "The overall impression captures how all facial features work together to create an attractive appearance. It reflects the holistic impact of facial structure beyond individual metrics." },
 };
 
 const ALL_DIMORPHISM_VISION_KEYS: Array<keyof typeof VISION_METRIC_LABELS> = [
@@ -73,7 +72,7 @@ function GradientBar({ score }: { score: number }) {
       background: "linear-gradient(to right, #ef4444, #f97316, #eab308, #22c55e, #22c55e, #eab308, #f97316, #ef4444)"
     }}>
       <div className="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-white border-2 border-zinc-300 rounded-full shadow"
-        style={{ left: "calc(" + pct + "% - 6px)" }} />
+        style={{ left: `calc(${pct}% - 6px)` }} />
     </div>
   );
 }
@@ -118,7 +117,7 @@ function CompositeMetricModal({ metric, onClose }: { metric: CompositeMetricInfo
             background: "linear-gradient(to right, #ef4444, #f97316, #eab308, #22c55e, #22c55e, #eab308, #f97316, #ef4444)"
           }}>
             <div className="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-white border-2 border-zinc-300 rounded-full shadow"
-              style={{ left: "calc(" + pct + "% - 6px)" }} />
+              style={{ left: `calc(${pct}% - 6px)` }} />
           </div>
           <p className="text-xs text-zinc-400 mt-1">{getScoreLabel(metric.score)}</p>
         </div>
@@ -221,7 +220,9 @@ export default function ResultsDisplay({ result, onReset }: ResultsDisplayProps)
           <div className="flex items-center gap-1">
             {tabs.map(tab => (
               <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-                className={"px-4 py-1.5 text-sm font-medium rounded-full transition-all border " + (activeTab === tab.id ? "bg-black text-white border-black" : "text-zinc-500 border-transparent hover:text-black")}>
+                className={`px-4 py-1.5 text-sm font-medium rounded-full transition-all border ${
+                  activeTab === tab.id ? "bg-black text-white border-black" : "text-zinc-500 border-transparent hover:text-black"
+                }`}>
                 {tab.label}
               </button>
             ))}
@@ -245,7 +246,7 @@ export default function ResultsDisplay({ result, onReset }: ResultsDisplayProps)
           <div className="flex items-center gap-6">
             {tabs.map(tab => (
               <button key={tab.id} onClick={() => setActiveTab(tab.id)} className="text-left">
-                <p className={"text-xs mb-0.5 transition-colors " + (activeTab === tab.id ? "text-black font-medium" : "text-zinc-400")}>
+                <p className={`text-xs mb-0.5 transition-colors ${activeTab === tab.id ? "text-black font-medium" : "text-zinc-400"}`}>
                   {tab.label}
                 </p>
                 <p className="text-lg font-semibold leading-none" style={{ color: getScoreColor(tab.score) }}>
@@ -267,7 +268,9 @@ export default function ResultsDisplay({ result, onReset }: ResultsDisplayProps)
               </p>
             </div>
             <button onClick={() => setShowLandmarks(!showLandmarks)}
-              className={"px-3 py-1.5 text-xs font-medium rounded-full border transition-colors " + (showLandmarks ? "bg-black text-white border-black" : "bg-zinc-50 text-zinc-600 border-zinc-200 hover:border-zinc-400")}>
+              className={`px-3 py-1.5 text-xs font-medium rounded-full border transition-colors ${
+                showLandmarks ? "bg-black text-white border-black" : "bg-zinc-50 text-zinc-600 border-zinc-200 hover:border-zinc-400"
+              }`}>
               {showLandmarks ? "Landmarks ON" : "Landmarks OFF"}
             </button>
           </div>
@@ -366,4 +369,3 @@ export default function ResultsDisplay({ result, onReset }: ResultsDisplayProps)
     </div>
   );
 }
-ENDOFFILE
