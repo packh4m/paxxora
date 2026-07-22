@@ -22,7 +22,6 @@ const LINE_COLOR = "#00CED1";
 const LINE_COLOR_SECONDARY = "rgba(0,206,209,0.5)";
 const LINE_WIDTH = 2;
 
-// Map metric IDs to the landmark indices they use (1-indexed)
 const METRIC_LANDMARKS: Record<string, number[]> = {
   nose_bridge_width: [36, 37, 4, 5],
   lower_third: [35, 7],
@@ -93,6 +92,8 @@ export default function MetricDetailModal({
   const detectableIndex = detectableMetrics.findIndex(
     (m) => m.definition.id === metric.definition.id
   );
+
+  const usedLandmarks = METRIC_LANDMARKS[metric.definition.id] ?? [];
 
   const L = useCallback((idx: number): Point => {
     if (idx >= 0 && idx < landmarks.length && landmarks[idx]) return landmarks[idx];
@@ -251,7 +252,6 @@ export default function MetricDetailModal({
 
   const scoreColor = getScoreColor(metric.score ?? 5);
   const pct = ((metric.score ?? 0) / 10) * 100;
-  const usedLandmarks = METRIC_LANDMARKS[metric.definition.id] ?? [];
 
   if (editingLandmarkIndex !== null) {
     return (
@@ -261,6 +261,7 @@ export default function MetricDetailModal({
         imageHeight={imageHeight}
         landmarks={landmarks}
         editingIndex={editingLandmarkIndex}
+        relevantIndices={usedLandmarks}
         onDone={handleLandmarkDone}
         onBack={() => setEditingLandmarkIndex(null)}
       />
@@ -286,7 +287,6 @@ export default function MetricDetailModal({
 
       <div className="w-full max-w-4xl bg-white rounded-2xl overflow-hidden shadow-2xl border border-zinc-200">
 
-        {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-100">
           <div className="flex items-center gap-3">
             <span className="text-xs text-zinc-400 font-mono">{detectableIndex + 1} / {detectableMetrics.length}</span>
@@ -301,7 +301,6 @@ export default function MetricDetailModal({
 
         <div className="flex flex-col md:flex-row" style={{ maxHeight: "75vh" }}>
 
-          {/* Left — photo */}
           <div className="flex-1 bg-zinc-900 flex items-center justify-center overflow-hidden relative" style={{ minHeight: 300 }}>
             <div className="relative inline-block p-4">
               <img
@@ -321,10 +320,8 @@ export default function MetricDetailModal({
             </div>
           </div>
 
-          {/* Right */}
           <div className="w-full md:w-72 flex flex-col overflow-y-auto border-t md:border-t-0 md:border-l border-zinc-100">
 
-            {/* Tabs */}
             <div className="flex border-b border-zinc-100">
               {(["overview", "edit"] as const).map(tab => (
                 <button key={tab} onClick={() => setActiveTab(tab)}
@@ -338,7 +335,6 @@ export default function MetricDetailModal({
 
             {activeTab === "overview" && (
               <>
-                {/* Score */}
                 <div className="px-5 py-5 border-b border-zinc-100">
                   <div className="flex items-end gap-2 mb-1">
                     <span className="text-4xl font-semibold" style={{ color: scoreColor }}>
@@ -360,7 +356,6 @@ export default function MetricDetailModal({
                   </div>
                 </div>
 
-                {/* Value */}
                 <div className="px-5 py-4 border-b border-zinc-100">
                   <p className="text-xs text-zinc-400 mb-1 uppercase tracking-widest font-mono">Your Value</p>
                   <p className="text-2xl font-semibold text-black">{metric.displayValue ?? "—"}</p>
@@ -369,13 +364,11 @@ export default function MetricDetailModal({
                   </p>
                 </div>
 
-                {/* Description */}
                 <div className="px-5 py-4 border-b border-zinc-100">
                   <p className="text-xs text-zinc-400 mb-2 uppercase tracking-widest font-mono">About this ratio</p>
                   <p className="text-sm text-zinc-600 leading-relaxed">{metric.definition.description}</p>
                 </div>
 
-                {/* Category */}
                 <div className="px-5 py-4">
                   <p className="text-xs text-zinc-400 mb-2 uppercase tracking-widest font-mono">Category</p>
                   <span className="px-2.5 py-1 bg-zinc-100 text-zinc-600 text-xs rounded-full border border-zinc-200">
