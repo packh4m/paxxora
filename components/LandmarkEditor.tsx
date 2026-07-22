@@ -1,4 +1,4 @@
-"use client";
+p"use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Point } from "@/lib/types";
@@ -37,6 +37,7 @@ export default function LandmarkEditor({
   const imageRef = useRef<HTMLImageElement>(null);
 
   const point = LANDMARK_POINTS[editingIndex - 1];
+  const zoomScale = ZOOM_LEVELS[zoomIndex].scale / 2;
 
   const drawCanvas = useCallback(() => {
     const canvas = canvasRef.current;
@@ -69,13 +70,25 @@ export default function LandmarkEditor({
       const x = p.x * scaleX;
       const y = p.y * scaleY;
 
+      // Match dot size from ManualPointPlacement
+      const radius = isActive ? 6 : 4;
+
       ctx.beginPath();
-      ctx.arc(x, y, isActive ? 8 : 5, 0, Math.PI * 2);
+      ctx.arc(x, y, radius, 0, Math.PI * 2);
       ctx.fillStyle = isActive ? "#ef4444" : "rgba(0, 206, 209, 0.8)";
       ctx.fill();
       ctx.strokeStyle = "#fff";
       ctx.lineWidth = isActive ? 2 : 1.5;
       ctx.stroke();
+
+      // Label number for active point
+      if (isActive) {
+        ctx.font = "bold 10px Inter, system-ui, sans-serif";
+        ctx.fillStyle = "#fff";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(String(editingIndex), x, y - radius - 8);
+      }
     });
   }, [points, editingIndex, relevantIndices, imageWidth, imageHeight]);
 
@@ -98,13 +111,17 @@ export default function LandmarkEditor({
     if (!canvas || !image) return;
 
     const rect = canvas.getBoundingClientRect();
-    const clickX = e.clientX - rect.left;
-    const clickY = e.clientY - rect.top;
+    // Divide by zoomScale to account for CSS transform scaling
+    const clickX = (e.clientX - rect.left) / zoomScale;
+    const clickY = (e.clientY - rect.top) / zoomScale;
     const scaleX = imageWidth / image.clientWidth;
     const scaleY = imageHeight / image.clientHeight;
 
     const newPoints = [...points];
-    newPoints[editingIndex] = { x: clickX * scaleX, y: clickY * scaleY };
+    newPoints[editingIndex] = {
+      x: clickX * scaleX,
+      y: clickY * scaleY,
+    };
     setPoints(newPoints);
   };
 
@@ -121,18 +138,17 @@ export default function LandmarkEditor({
         default: return;
       }
       e.preventDefault();
+      // Fine-tune at 1px in screen space, divided by zoom for accuracy
       const newPoints = [...points];
       newPoints[editingIndex] = {
-        x: Math.max(0, Math.min(imageWidth, current.x + dx)),
-        y: Math.max(0, Math.min(imageHeight, current.y + dy)),
+        x: Math.max(0, Math.min(imageWidth, current.x + dx / zoomScale)),
+        y: Math.max(0, Math.min(imageHeight, current.y + dy / zoomScale)),
       };
       setPoints(newPoints);
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [points, editingIndex, imageWidth, imageHeight]);
-
-  const scale = ZOOM_LEVELS[zoomIndex].scale;
+  }, [points, editingIndex, imageWidth, imageHeight, zoomScale]);
 
   return (
     <div className="fixed inset-0 z-[60] bg-[#f7f7f5] flex">
@@ -164,7 +180,7 @@ export default function LandmarkEditor({
           <div
             className="relative"
             style={{
-              transform: `scale(${scale / 2})`,
+              transform: `scale(${zoomScale})`,
               transformOrigin: "center center",
             }}
           >
