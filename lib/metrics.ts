@@ -558,10 +558,11 @@ export function calculateAllMetrics(faceLandmarks: FaceLandmarks): MetricResult[
         }
 
         case "mouth_corner_position": {
-  const leftCornerUpturn = L[42].y - L[38].y;
-  const rightCornerUpturn = L[42].y - L[39].y;
-  value = ((leftCornerUpturn + rightCornerUpturn) / 2) / pixelsPerMm;
-  break;
+         const refY = L[42].y;
+         const leftDiff = refY - L[38].y;
+        const rightDiff = refY - L[39].y;
+         value = ((leftDiff + rightDiff) / 2) / pixelsPerMm;
+        break;
 }
 
         case "ear_protrusion_ratio": {
