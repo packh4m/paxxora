@@ -406,8 +406,10 @@ export default function ResultsDisplay({ result, onReset, onResultUpdate }: Resu
       : newOverallScore,
   });
 }}
+  />
+      )}
 
-      {selectedComposite && (
+{selectedComposite && (
         <CompositeMetricModal metric={selectedComposite} onClose={() => setSelectedComposite(null)} />
       )}
     </div>
