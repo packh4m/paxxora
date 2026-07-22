@@ -43,7 +43,7 @@ export function Navigation() {
         >
           <a href="#" className="flex items-center gap-2 group">
             <img
-              src="/images/paxxora-logo.png"
+              src="/paxxora.svg"
               alt="Paxxora logo"
               className="object-contain transition-all duration-500 h-10 w-10"
             />
