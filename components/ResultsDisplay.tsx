@@ -25,53 +25,20 @@ interface CompositeMetricInfo {
 }
 
 const ANGULARITY_INFO: Record<string, { description: string; why: string }> = {
-  "Jaw Definition": {
-    description: "Measures the sharpness and angularity of the jawline based on jaw frontal angle and jaw slope.",
-    why: "A well-defined jaw creates strong facial structure and is one of the most important markers of masculine attractiveness. It separates the face from the neck cleanly, creating visual impact and dominance.",
-  },
-  "Chin Definition": {
-    description: "Evaluates chin projection and the philtrum-to-chin ratio relative to the lower face.",
-    why: "A defined chin acts as an anchor for the lower third of the face. It balances the overall facial profile and contributes to a strong, structured appearance.",
-  },
-  "Cheekbone Prominence": {
-    description: "Assesses how high and projected the cheekbones are relative to total facial height.",
-    why: "High cheekbones cast shadows that create facial depth and dimension. They are a universal marker of attractiveness across cultures and contribute heavily to a chiselled appearance.",
-  },
-  "Cheek Leanness": {
-    description: "Evaluates facial leanness through midface ratio and jaw width proportions.",
-    why: "Lean cheeks expose underlying bone structure and reduce soft tissue that obscures facial definition. Lower facial fat reveals the angles that make a face appear sculpted.",
-  },
-  "Submental Definition": {
-    description: "Measures the definition of the neck-jaw transition using neck width and jaw slope.",
-    why: "A clean neck-to-jaw transition is critical for a sharp profile. Excess submental fat or a weak jawline blurs this boundary, reducing overall facial sharpness.",
-  },
+  "Jaw Definition": { description: "Measures the sharpness and angularity of the jawline based on jaw frontal angle and jaw slope.", why: "A well-defined jaw creates strong facial structure and is one of the most important markers of masculine attractiveness. It separates the face from the neck cleanly, creating visual impact and dominance." },
+  "Chin Definition": { description: "Evaluates chin projection and the philtrum-to-chin ratio relative to the lower face.", why: "A defined chin acts as an anchor for the lower third of the face. It balances the overall facial profile and contributes to a strong, structured appearance." },
+  "Cheekbone Prominence": { description: "Assesses how high and projected the cheekbones are relative to total facial height.", why: "High cheekbones cast shadows that create facial depth and dimension. They are a universal marker of attractiveness across cultures and contribute heavily to a chiselled appearance." },
+  "Cheek Leanness": { description: "Evaluates facial leanness through midface ratio and jaw width proportions.", why: "Lean cheeks expose underlying bone structure and reduce soft tissue that obscures facial definition. Lower facial fat reveals the angles that make a face appear sculpted." },
+  "Submental Definition": { description: "Measures the definition of the neck-jaw transition using neck width and jaw slope.", why: "A clean neck-to-jaw transition is critical for a sharp profile. Excess submental fat or a weak jawline blurs this boundary, reducing overall facial sharpness." },
 };
 
 const DIMORPHISM_GEO_INFO: Record<string, { description: string; why: string }> = {
-  "Jaw": {
-    description: "Composite of jaw frontal angle, bigonial width, and jaw slope to measure jaw masculinity.",
-    why: "The jaw is the single most important structure for male sexual dimorphism. A wide, angular jaw signals testosterone exposure and genetic fitness, making it the defining feature of a masculine face.",
-  },
-  "Eyes": {
-    description: "Combines canthal tilt and eye aspect ratio to evaluate eye masculinity.",
-    why: "Positively tilted, narrower eyes (hunter eyes) are a hallmark of masculine faces. They convey intensity and dominance, contrasting with the rounder, more open eyes associated with feminine faces.",
-  },
-  "Face Shape": {
-    description: "Evaluates overall face shape masculinity using width-to-height ratios.",
-    why: "Masculine faces tend to be wider and more square-shaped. A higher facial width-to-height ratio is associated with dominance, aggression, and testosterone levels.",
-  },
-  "Nose": {
-    description: "Assesses nose masculinity through intercanthal-nasal ratio and middle third proportions.",
-    why: "Masculine noses tend to be wider and more prominent. Nose size and projection relative to facial width is a key dimorphic trait that signals androgenic development.",
-  },
-  "Brow Ridge": {
-    description: "Measures brow prominence through eyebrow tilt and brow length ratio.",
-    why: "A prominent, low-set brow ridge is one of the clearest markers of male sexual dimorphism. It creates a shadow over the eyes that enhances the appearance of depth and intensity.",
-  },
-  "Lips": {
-    description: "Evaluates lip masculinity through chin-to-philtrum ratio and lower third proportion.",
-    why: "Thinner lips relative to the lower face are a masculine trait. The proportion of the philtrum and chin to the lip height contributes to how masculine or feminine the mouth region appears.",
-  },
+  "Jaw": { description: "Composite of jaw frontal angle, bigonial width, and jaw slope to measure jaw masculinity.", why: "The jaw is the single most important structure for male sexual dimorphism. A wide, angular jaw signals testosterone exposure and genetic fitness, making it the defining feature of a masculine face." },
+  "Eyes": { description: "Combines canthal tilt and eye aspect ratio to evaluate eye masculinity.", why: "Positively tilted, narrower eyes (hunter eyes) are a hallmark of masculine faces. They convey intensity and dominance, contrasting with the rounder, more open eyes associated with feminine faces." },
+  "Face Shape": { description: "Evaluates overall face shape masculinity using width-to-height ratios.", why: "Masculine faces tend to be wider and more square-shaped. A higher facial width-to-height ratio is associated with dominance, aggression, and testosterone levels." },
+  "Nose": { description: "Assesses nose masculinity through intercanthal-nasal ratio and middle third proportions.", why: "Masculine noses tend to be wider and more prominent. Nose size and projection relative to facial width is a key dimorphic trait that signals androgenic development." },
+  "Brow Ridge": { description: "Measures brow prominence through eyebrow tilt and brow length ratio.", why: "A prominent, low-set brow ridge is one of the clearest markers of male sexual dimorphism. It creates a shadow over the eyes that enhances the appearance of depth and intensity." },
+  "Lips": { description: "Evaluates lip masculinity through chin-to-philtrum ratio and lower third proportion.", why: "Thinner lips relative to the lower face are a masculine trait. The proportion of the philtrum and chin to the lip height contributes to how masculine or feminine the mouth region appears." },
 };
 
 const DIMORPHISM_VISION_INFO: Record<string, { description: string; why: string }> = {
@@ -254,7 +221,7 @@ export default function ResultsDisplay({ result, onReset }: ResultsDisplayProps)
   return (
     <div className="flex flex-col bg-[#f7f7f5]" style={{ height: "100vh", overflow: "hidden" }}>
 
-      {/* Header — nav + tabs */}
+      {/* Header */}
       <header className="flex-shrink-0 bg-white border-b border-zinc-200 z-10">
         <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
           <Link href="/dashboard" className="text-lg font-semibold text-black tracking-tight">Paxxora</Link>
@@ -274,10 +241,9 @@ export default function ResultsDisplay({ result, onReset }: ResultsDisplayProps)
         </div>
       </header>
 
-      {/* Score banner — all category scores at once */}
+      {/* Score banner */}
       <div className="flex-shrink-0 bg-white border-b border-zinc-200 px-6 py-3">
         <div className="max-w-7xl mx-auto flex items-center gap-8">
-          {/* Overall */}
           <div className="flex-shrink-0">
             <p className="text-xs text-zinc-400 mb-0.5">Overall</p>
             <p className="text-2xl font-semibold leading-none" style={{ color: getScoreColor(finalScore) }}>
@@ -285,13 +251,10 @@ export default function ResultsDisplay({ result, onReset }: ResultsDisplayProps)
             </p>
             <p className="text-xs text-zinc-400 mt-0.5">{getScoreLabel(finalScore)}</p>
           </div>
-
           <div className="w-px h-10 bg-zinc-200 flex-shrink-0" />
-
-          {/* Category scores */}
           <div className="flex items-center gap-6">
             {tabs.map(tab => (
-              <button key={tab.id} onClick={() => setActiveTab(tab.id)} className="text-left group">
+              <button key={tab.id} onClick={() => setActiveTab(tab.id)} className="text-left">
                 <p className={`text-xs mb-0.5 transition-colors ${activeTab === tab.id ? "text-black font-medium" : "text-zinc-400"}`}>
                   {tab.label}
                 </p>
@@ -304,33 +267,42 @@ export default function ResultsDisplay({ result, onReset }: ResultsDisplayProps)
         </div>
       </div>
 
-      {/* Main content */}
+      {/* Main */}
       <div className="flex flex-1 overflow-hidden max-w-7xl mx-auto w-full p-4 gap-4">
 
         {/* Left — photo */}
-        <div className="w-80 flex-shrink-0 flex flex-col overflow-hidden rounded-2xl border border-zinc-200 shadow-sm" style={{ background: "#111" }}>
-          {/* Active tab score over photo */}
-          <div className="flex-shrink-0 px-4 py-3 flex items-center justify-between" style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
+        <div className="w-80 flex-shrink-0 flex flex-col overflow-hidden rounded-2xl bg-white border border-zinc-200 shadow-sm">
+          {/* Score header */}
+          <div className="flex-shrink-0 px-4 py-3 border-b border-zinc-100 flex items-center justify-between">
             <div>
-              <p className="text-xs text-zinc-500 mb-0.5">{tabs.find(t => t.id === activeTab)?.label} score</p>
+              <p className="text-xs text-zinc-400 mb-0.5">{tabs.find(t => t.id === activeTab)?.label} score</p>
               <p className="text-xl font-semibold" style={{ color: getScoreColor(activeScore) }}>
-                {activeScore.toFixed(2)}<span className="text-xs text-zinc-500 font-normal ml-1">/10</span>
+                {activeScore.toFixed(2)}<span className="text-xs text-zinc-400 font-normal ml-1">/10</span>
               </p>
             </div>
             <button onClick={() => setShowLandmarks(!showLandmarks)}
               className={`px-3 py-1.5 text-xs font-medium rounded-full border transition-colors ${
-                showLandmarks ? "bg-white text-black border-white" : "bg-white/10 text-zinc-400 border-zinc-700 hover:border-zinc-500"
+                showLandmarks ? "bg-black text-white border-black" : "bg-zinc-50 text-zinc-600 border-zinc-200 hover:border-zinc-400"
               }`}>
               {showLandmarks ? "Landmarks ON" : "Landmarks OFF"}
             </button>
           </div>
 
-          {/* Photo */}
-          <div className="flex-1 relative overflow-hidden">
+          {/* Photo — fills remaining space, no padding, covers fully */}
+          <div className="flex-1 relative overflow-hidden rounded-b-2xl">
             {showLandmarks && result.landmarks && result.imageWidth && result.imageHeight ? (
-              <LandmarkOverlay imageUrl={result.imageUrl} landmarks={result.landmarks} imageWidth={result.imageWidth} imageHeight={result.imageHeight} />
+              <LandmarkOverlay
+                imageUrl={result.imageUrl}
+                landmarks={result.landmarks}
+                imageWidth={result.imageWidth}
+                imageHeight={result.imageHeight}
+              />
             ) : (
-              <img src={result.imageUrl} alt="Analyzed photo" className="w-full h-full object-contain p-3" />
+              <img
+                src={result.imageUrl}
+                alt="Analyzed photo"
+                className="w-full h-full object-cover"
+              />
             )}
           </div>
         </div>
