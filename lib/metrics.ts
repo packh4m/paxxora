@@ -533,16 +533,6 @@ export function calculateAllMetrics(faceLandmarks: FaceLandmarks): MetricResult[
           break;
         }
 
-        case "brow_eye_distance": {
-          // Brow to eye distance / eye height
-          const leftDist = Math.abs(L[14].y - L[21].y);
-          const rightDist = Math.abs(L[25].y - L[32].y);
-          const avgDist = (leftDist + rightDist) / 2;
-          const avgEyeHeight = (core.raw.leftEyeHeight + core.raw.rightEyeHeight) / 2;
-          value = avgDist / avgEyeHeight;
-          break;
-        }
-
         case "brow_length_ratio": {
           // Brow length (18 to 21, 29 to 32) / face width (51 to 52)
           const leftLength = distance(L[18], L[21]);
@@ -568,12 +558,11 @@ export function calculateAllMetrics(faceLandmarks: FaceLandmarks): MetricResult[
         }
 
         case "mouth_corner_position": {
-          // Mouth corner upturn relative to mouth center
-          const mouthCenterY = (L[40].y + L[6].y) / 2;
-          const avgCornerY = (L[38].y + L[39].y) / 2;
-          value = (mouthCenterY - avgCornerY) / pixelsPerMm;
-          break;
-        }
+  const leftCornerUpturn = L[42].y - L[38].y;
+  const rightCornerUpturn = L[42].y - L[39].y;
+  value = ((leftCornerUpturn + rightCornerUpturn) / 2) / pixelsPerMm;
+  break;
+}
 
         case "ear_protrusion_ratio": {
           // Ear protrusion relative to ear-to-ear width
