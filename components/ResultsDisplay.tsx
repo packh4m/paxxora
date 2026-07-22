@@ -376,18 +376,37 @@ export default function ResultsDisplay({ result, onReset }: ResultsDisplayProps)
       </div>
 
       {selectedMetricIndex !== null && result.landmarks && result.imageWidth && result.imageHeight && (
-        <MetricDetailModal
-          metric={result.metrics[selectedMetricIndex]}
-          metrics={result.metrics}
-          currentIndex={selectedMetricIndex}
-          imageUrl={result.imageUrl}
-          landmarks={result.landmarks}
-          imageWidth={result.imageWidth}
-          imageHeight={result.imageHeight}
-          onClose={() => setSelectedMetricIndex(null)}
-          onNavigate={(index) => setSelectedMetricIndex(index)}
-        />
-      )}
+  <MetricDetailModal
+    metric={result.metrics[selectedMetricIndex]}
+    metrics={result.metrics}
+    currentIndex={selectedMetricIndex}
+    imageUrl={result.imageUrl}
+    landmarks={result.landmarks}
+    imageWidth={result.imageWidth}
+    imageHeight={result.imageHeight}
+    onClose={() => setSelectedMetricIndex(null)}
+    onNavigate={(index) => setSelectedMetricIndex(index)}
+    onLandmarksUpdate={(updatedLandmarks) => {
+      const newMetrics = calculateAllMetrics({
+        landmarks: updatedLandmarks,
+        imageWidth: result.imageWidth!,
+        imageHeight: result.imageHeight!,
+      });
+      const scores = newMetrics.map(m => m.score);
+      const metricIds = newMetrics.map(m => m.definition.id);
+      const newOverallScore = calculateOverallScore(scores, metricIds);
+      setResult(prev => prev ? {
+        ...prev,
+        metrics: newMetrics,
+        overallScore: newOverallScore,
+        landmarks: updatedLandmarks,
+        finalScore: prev.visionScores
+          ? (newOverallScore * 0.5) + (prev.finalScore! - prev.overallScore * 0.5)
+          : newOverallScore,
+      } : prev);
+    }}
+  />
+)}
 
       {selectedComposite && (
         <CompositeMetricModal metric={selectedComposite} onClose={() => setSelectedComposite(null)} />
