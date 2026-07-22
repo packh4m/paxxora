@@ -263,9 +263,14 @@ export function calculateAllMetrics(faceLandmarks: FaceLandmarks): MetricResult[
         }
 
         case "midface_ratio": {
-          const bizygomaticWidth = distance(L[51], L[52]);
-          const midfaceHeight = distance(L[34], L[35]);
-          value = bizygomaticWidth / midfaceHeight;
+          const interpupillary = distance(L[2], L[3]);
+          const avgPupilX = (L[2].x + L[3].x) / 2;
+          const avgPupilY = (L[2].y + L[3].y) / 2;
+          const pupilToCupidsBow = distance(
+          { x: avgPupilX, y: avgPupilY },
+          { x: avgPupilX, y: L[40].y }
+        );
+          value = interpupillary / pupilToCupidsBow;
           break;
         }
 
