@@ -12,7 +12,11 @@ interface ManualPointPlacementProps {
   onCancel: () => void;
 }
 
-const ZOOM_LEVELS = [1, 1.5, 2, 2.5, 3, 4];
+const ZOOM_LEVELS = [
+  { label: "1", sub: "1x", multiplier: 1 },
+  { label: "2", sub: "2x", multiplier: 2 },
+  { label: "3", sub: "4x", multiplier: 4 },
+];
 
 export default function ManualPointPlacement({
   imageUrl,
@@ -26,13 +30,12 @@ export default function ManualPointPlacement({
     new Array(LANDMARK_POINTS.length).fill(null)
   );
   const [hoveredPoint, setHoveredPoint] = useState<{ x: number; y: number } | null>(null);
-  const [zoomLevel, setZoomLevel] = useState(1);
-  const [baseDisplaySize, setBaseDisplaySize] = useState<{ width: number; height: number } | null>(null);
+  const [zoomIndex, setZoomIndex] = useState(0);
+  const [baseSize, setBaseSize] = useState<{ width: number; height: number } | null>(null);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
   const imageRef = useRef<HTMLImageElement>(null);
-  const imageContainerRef = useRef<HTMLDivElement>(null);
 
   const completedIndices = placedPoints
     .map((p, i) => (p !== null ? i : -1))
@@ -40,51 +43,20 @@ export default function ManualPointPlacement({
 
   const currentPoint = LANDMARK_POINTS[currentPointIndex];
   const progress = (completedIndices.length / LANDMARK_POINTS.length) * 100;
+  const multiplier = ZOOM_LEVELS[zoomIndex].multiplier;
 
-  const handleZoomIn = () => {
-    const currentIndex = ZOOM_LEVELS.indexOf(zoomLevel);
-    if (currentIndex < ZOOM_LEVELS.length - 1) setZoomLevel(ZOOM_LEVELS[currentIndex + 1]);
-  };
-
-  const handleZoomOut = () => {
-    const currentIndex = ZOOM_LEVELS.indexOf(zoomLevel);
-    if (currentIndex > 0) setZoomLevel(ZOOM_LEVELS[currentIndex - 1]);
-  };
-
-  const handleResetZoom = () => setZoomLevel(1);
-
-  const handleWheel = useCallback((e: WheelEvent) => {
-    if (e.ctrlKey || e.metaKey) {
-      e.preventDefault();
-      if (e.deltaY < 0) handleZoomIn();
-      else handleZoomOut();
-    }
-  }, [zoomLevel]);
-
-  useEffect(() => {
-    const container = imageContainerRef.current;
-    if (container) {
-      container.addEventListener('wheel', handleWheel, { passive: false });
-      return () => container.removeEventListener('wheel', handleWheel);
-    }
-  }, [handleWheel]);
+  const displayWidth = baseSize ? baseSize.width * multiplier : undefined;
+  const displayHeight = baseSize ? baseSize.height * multiplier : undefined;
 
   const drawCanvas = useCallback(() => {
     const canvas = canvasRef.current;
     const image = imageRef.current;
-    if (!canvas || !image) return;
+    if (!canvas || !image || !displayWidth || !displayHeight) return;
 
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    if (zoomLevel === 1 && image.clientWidth > 0) {
-      setBaseDisplaySize({ width: image.clientWidth, height: image.clientHeight });
-    }
-
-    const displayWidth = image.clientWidth;
-    const displayHeight = image.clientHeight;
     const dpr = window.devicePixelRatio || 1;
-
     canvas.width = displayWidth * dpr;
     canvas.height = displayHeight * dpr;
     canvas.style.width = `${displayWidth}px`;
@@ -101,18 +73,20 @@ export default function ManualPointPlacement({
       const x = point.x * scaleX;
       const y = point.y * scaleY;
       const isActive = index === currentPointIndex;
-      const color = isActive ? "#ef4444" : "#22c55e";
 
       ctx.beginPath();
-      ctx.arc(x, y, isActive ? 6 : 4, 0, Math.PI * 2);
-      ctx.fillStyle = color;
+      ctx.arc(x, y, isActive ? 4 : 3, 0, Math.PI * 2);
+      ctx.fillStyle = isActive ? "#ef4444" : "#22c55e";
       ctx.fill();
+      ctx.strokeStyle = "#fff";
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
 
-      ctx.font = "bold 10px Inter, sans-serif";
+      ctx.font = "bold 9px system-ui, sans-serif";
       ctx.fillStyle = "#fff";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
-      ctx.fillText(String(index + 1), x, y - 12);
+      ctx.fillText(String(index + 1), x, y - 9);
     });
 
     if (hoveredPoint) {
@@ -125,14 +99,19 @@ export default function ManualPointPlacement({
       ctx.fillStyle = "#ef4444";
       ctx.fill();
     }
-  }, [placedPoints, currentPointIndex, hoveredPoint, imageWidth, imageHeight, zoomLevel, baseDisplaySize]);
+  }, [placedPoints, currentPointIndex, hoveredPoint, imageWidth, imageHeight, displayWidth, displayHeight]);
 
   useEffect(() => { drawCanvas(); }, [drawCanvas]);
 
+  const handleImageLoad = () => {
+    const image = imageRef.current;
+    if (!image) return;
+    setBaseSize({ width: image.clientWidth, height: image.clientHeight });
+  };
+
   useEffect(() => {
-    const timeout = setTimeout(drawCanvas, 50);
-    return () => clearTimeout(timeout);
-  }, [zoomLevel, baseDisplaySize]);
+    if (baseSize) drawCanvas();
+  }, [baseSize, drawCanvas]);
 
   useEffect(() => {
     const handleResize = () => setTimeout(drawCanvas, 100);
@@ -140,20 +119,30 @@ export default function ManualPointPlacement({
     return () => window.removeEventListener("resize", handleResize);
   }, [drawCanvas]);
 
+  // Auto-scroll to current point
+  useEffect(() => {
+    const current = placedPoints[currentPointIndex];
+    const scroll = scrollRef.current;
+    if (!current || !scroll || !displayWidth || !displayHeight) return;
+    const x = (current.x / imageWidth) * displayWidth;
+    const y = (current.y / imageHeight) * displayHeight;
+    scroll.scrollTo({
+      left: x - scroll.clientWidth / 2,
+      top: y - scroll.clientHeight / 2,
+      behavior: "smooth",
+    });
+  }, [zoomIndex, currentPointIndex]);
+
   const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
-    const image = imageRef.current;
-    if (!canvas || !image) return;
+    if (!canvas || !displayWidth || !displayHeight) return;
 
     const rect = canvas.getBoundingClientRect();
     const clickX = e.clientX - rect.left;
     const clickY = e.clientY - rect.top;
-    const displayWidth = image.clientWidth;
-    const displayHeight = image.clientHeight;
-    const scaleX = imageWidth / displayWidth;
-    const scaleY = imageHeight / displayHeight;
-    const imageX = clickX * scaleX;
-    const imageY = clickY * scaleY;
+
+    const imageX = (clickX / displayWidth) * imageWidth;
+    const imageY = (clickY / displayHeight) * imageHeight;
 
     const newPlacedPoints = [...placedPoints];
     newPlacedPoints[currentPointIndex] = { x: imageX, y: imageY };
@@ -235,10 +224,7 @@ export default function ManualPointPlacement({
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-3 border-b border-zinc-200 bg-white">
           <div className="flex items-center gap-3">
-            <button
-              onClick={onCancel}
-              className="text-zinc-400 hover:text-black transition-colors"
-            >
+            <button onClick={onCancel} className="text-zinc-400 hover:text-black transition-colors">
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
@@ -247,27 +233,19 @@ export default function ManualPointPlacement({
           </div>
 
           <div className="flex items-center gap-2">
-            {/* Zoom controls */}
+            {/* Zoom buttons */}
             <div className="flex items-center gap-1 bg-zinc-100 rounded-lg p-1">
-              <button
-                onClick={handleZoomOut}
-                disabled={zoomLevel === 1}
-                className="p-1.5 text-zinc-400 hover:text-black disabled:opacity-30 disabled:cursor-not-allowed transition-colors rounded"
-              >
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM13 10H7" />
-                </svg>
-              </button>
-              <span className="px-2 text-xs font-medium text-black min-w-[2.5rem] text-center">{zoomLevel}x</span>
-              <button
-                onClick={handleZoomIn}
-                disabled={zoomLevel === ZOOM_LEVELS[ZOOM_LEVELS.length - 1]}
-                className="p-1.5 text-zinc-400 hover:text-black disabled:opacity-30 disabled:cursor-not-allowed transition-colors rounded"
-              >
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
-                </svg>
-              </button>
+              {ZOOM_LEVELS.map((z, i) => (
+                <button
+                  key={i}
+                  onClick={() => setZoomIndex(i)}
+                  className={`px-3 py-1 text-xs font-medium rounded transition-colors ${
+                    zoomIndex === i ? "bg-white shadow text-black" : "text-zinc-500 hover:text-black"
+                  }`}
+                >
+                  {z.sub}
+                </button>
+              ))}
             </div>
 
             <button
@@ -292,32 +270,30 @@ export default function ManualPointPlacement({
           </div>
         </div>
 
-        {/* Canvas */}
-        <div
-          ref={containerRef}
-          className={`flex-1 overflow-auto bg-zinc-200 ${zoomLevel === 1 ? 'flex items-center justify-center' : ''}`}
-        >
+        {/* Scrollable canvas */}
+        <div ref={scrollRef} className="flex-1 overflow-auto bg-zinc-200">
           <div
-            ref={imageContainerRef}
-            className="relative flex-shrink-0"
-            style={baseDisplaySize && zoomLevel > 1 ? {
-              width: baseDisplaySize.width * zoomLevel,
-              height: baseDisplaySize.height * zoomLevel,
-            } : undefined}
+            className="relative"
+            style={{
+              width: displayWidth ?? "100%",
+              height: displayHeight ?? "100%",
+              minWidth: displayWidth,
+              minHeight: displayHeight,
+            }}
           >
             <img
               ref={imageRef}
               src={imageUrl}
               alt="Face for landmark placement"
-              className="select-none"
+              className="select-none block"
               style={{
-                width: baseDisplaySize && zoomLevel > 1 ? baseDisplaySize.width * zoomLevel : 'auto',
-                height: baseDisplaySize && zoomLevel > 1 ? baseDisplaySize.height * zoomLevel : 'auto',
-                maxWidth: zoomLevel === 1 ? '100%' : 'none',
-                maxHeight: zoomLevel === 1 ? 'calc(100vh - 160px)' : 'none',
-                objectFit: 'contain',
+                width: displayWidth ?? "auto",
+                height: displayHeight ?? "auto",
+                maxWidth: displayWidth ? "none" : "100%",
+                maxHeight: displayWidth ? "none" : "calc(100vh - 160px)",
+                objectFit: "contain",
               }}
-              onLoad={drawCanvas}
+              onLoad={handleImageLoad}
               draggable={false}
             />
             <canvas
@@ -333,7 +309,7 @@ export default function ManualPointPlacement({
         {/* Bottom bar */}
         <div className="px-6 py-3 border-t border-zinc-200 bg-white flex items-center justify-between">
           <p className="text-xs text-zinc-400">
-            Zoom in for precision • Ctrl/Cmd + scroll to zoom • Arrow keys to fine-tune (1px)
+            Arrow keys to fine-tune (1px) · Scroll to navigate
           </p>
           <span className="text-xs text-zinc-500 font-mono">
             {completedIndices.length}/{LANDMARK_POINTS.length} points
@@ -343,7 +319,6 @@ export default function ManualPointPlacement({
 
       {/* Sidebar */}
       <div className="w-72 border-l border-zinc-200 bg-white flex flex-col max-h-screen">
-
         {/* Progress */}
         <div className="px-5 py-4 border-b border-zinc-100">
           <div className="flex items-center justify-between mb-2">
@@ -362,12 +337,6 @@ export default function ManualPointPlacement({
           </div>
         </div>
 
-        {/* Current point info */}
-        <div className="px-5 py-4 border-b border-zinc-100">
-          <p className="text-base font-semibold text-black mb-0.5">{currentPoint?.name}</p>
-          <p className="text-xs text-zinc-400">{currentPoint?.description || "Place the point precisely"}</p>
-        </div>
-
         {/* Reference image */}
         <div className="px-5 py-4 border-b border-zinc-100">
           <FaceReferenceImage
@@ -382,7 +351,6 @@ export default function ManualPointPlacement({
           <div className="space-y-2">
             {[
               { key: "↑ ↓ ← →", label: "Fine-tune (1px)" },
-              { key: "Ctrl+scroll", label: "Zoom" },
               { key: "Enter", label: "Next / Confirm" },
               { key: "Backspace", label: "Previous" },
             ].map(({ key, label }) => (
