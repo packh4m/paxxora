@@ -41,15 +41,12 @@ export function Navigation() {
             isScrolled ? "h-14" : "h-20"
           }`}
         >
-          <Link href="/" className="flex items-center gap-2 group">
+          <Link href="/" className="flex items-center group">
             <img
               src="/paxxora.svg"
               alt="Paxxora logo"
               className="object-contain transition-all duration-500 h-10 w-10"
             />
-            <span className={`font-display tracking-tight transition-all duration-500 ${isScrolled ? "text-xl" : "text-2xl"}`}>
-              Paxxora
-            </span>
           </Link>
 
           <div className="hidden md:flex items-center gap-12">
