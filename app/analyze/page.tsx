@@ -200,8 +200,9 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-[#f7f7f5] flex flex-col">
       <header className="flex items-center justify-between px-8 py-6 border-b border-zinc-200">
-        <Link href="/dashboard" className="text-lg font-semibold text-black tracking-tight">
-          Paxxora
+        <Link href="/dashboard" className="flex items-center gap-2">
+          <img src="/paxxora.svg" alt="Paxxora" className="h-7 w-7 object-contain" />
+          <span className="text-lg font-semibold text-black tracking-tight">Paxxora</span>
         </Link>
         <Link href="/dashboard" className="text-sm text-zinc-400 hover:text-black transition-colors">
           ← Back
