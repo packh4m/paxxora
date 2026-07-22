@@ -32,7 +32,6 @@ const METRIC_LANDMARKS: Record<string, number[]> = {
   cupids_bow_depth: [40, 41],
   top_third: [1, 18, 29],
   face_width_height: [51, 52, 34, 7],
-  brow_eye_distance: [20, 14, 31, 25],
   total_face_width_height: [51, 52, 1, 7],
   eye_separation: [2, 3, 51, 52],
   middle_third: [18, 29, 35],
