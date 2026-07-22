@@ -1,7 +1,8 @@
+cat > components/ResultsDisplay.tsx << 'ENDOFFILE'
 "use client";
 
 import { useState, useMemo } from "react";
-import { AnalysisResult, MetricCategory, MetricResult, VISION_METRIC_LABELS } from "@/lib/types";
+import { AnalysisResult, MetricCategory, VISION_METRIC_LABELS } from "@/lib/types";
 import LandmarkOverlay from "./LandmarkOverlay";
 import MetricDetailModal from "./MetricDetailModal";
 import { getScoreColor, getScoreLabel, calculateOverallScore } from "@/lib/scoring";
@@ -15,7 +16,7 @@ interface ResultsDisplayProps {
 const HARMONY_CATEGORIES: MetricCategory[] = ["Facial Thirds", "Eyes"];
 const FEATURES_CATEGORIES: MetricCategory[] = ["Nose", "Jaw", "Lips", "Brows", "Features"];
 
-type Tab = "harmony" | "features" | "angularity" | "dimorphism" | "vision";
+type Tab = "harmony" | "features" | "angularity" | "dimorphism";
 
 interface CompositeMetricInfo {
   name: string;
@@ -47,19 +48,22 @@ const DIMORPHISM_VISION_INFO: Record<string, { description: string; why: string 
   eyebrow_thickness: { description: "AI assessment of eyebrow thickness and density.", why: "Thicker, denser eyebrows are a masculine trait linked to androgen sensitivity. They frame the eyes more strongly and contribute to a more intense, dominant expression." },
   nose_masculinity: { description: "AI assessment of overall nose masculinity.", why: "A wider, more prominent nose with a straighter bridge is a masculine feature. Nose size scales with overall facial size, which is itself a marker of androgenic development." },
   brow_ridge: { description: "AI assessment of brow ridge prominence.", why: "The supraorbital ridge is one of the most reliable skeletal markers of sexual dimorphism. Its prominence is driven by testosterone during puberty and creates the hooded, intense eye appearance associated with masculinity." },
-  hairline: { description: "AI assessment of hairline masculinity and definition.", why: "A defined, masculine hairline with temples that frame the face contributes to overall facial structure. Paradoxically, some hairline recession can signal elevated androgens in certain contexts." },
-  eyes_dimorphism: { description: "AI assessment of eye masculinity — depth, hooding, and canthal tilt.", why: "Deep-set, hooded eyes with a positive canthal tilt (hunter eyes) are strongly associated with masculine attractiveness. They convey predatory intensity and are a consistent preference in attraction research." },
-  lip_masculinity: { description: "AI assessment of lip masculinity.", why: "Thinner, less defined lips are a masculine trait. Overly full lips on a male face can feminise the appearance, while thinner lips reinforce the angular, structured look of a masculine face." },
-  face_shape_dimorphism: { description: "AI assessment of overall face shape masculinity.", why: "A square, angular face shape is driven by bone structure developed under androgenic influence. It is one of the most universally recognised markers of male attractiveness and dominance." },
-  jaw_dimorphism: { description: "AI assessment of jaw masculinity specifically.", why: "The jaw is the cornerstone of male facial attractiveness. Width, squareness, and definition of the jaw directly signal testosterone exposure and genetic quality to potential mates." },
-  hair_length: { description: "AI assessment of how masculine the hair length and style appears.", why: "Shorter hair traditionally emphasises facial structure and is associated with masculinity. Longer hair can soften facial features and reduce the perception of masculine sharpness." },
+  hairline: { description: "AI assessment of hairline masculinity and definition.", why: "A defined, masculine hairline with temples that frame the face contributes to overall facial structure." },
+  eyes_dimorphism: { description: "AI assessment of eye masculinity — depth, hooding, and canthal tilt.", why: "Deep-set, hooded eyes with a positive canthal tilt (hunter eyes) are strongly associated with masculine attractiveness." },
+  lip_masculinity: { description: "AI assessment of lip masculinity.", why: "Thinner, less defined lips are a masculine trait. Overly full lips on a male face can feminise the appearance." },
+  face_shape_dimorphism: { description: "AI assessment of overall face shape masculinity.", why: "A square, angular face shape is driven by bone structure developed under androgenic influence." },
+  jaw_dimorphism: { description: "AI assessment of jaw masculinity specifically.", why: "The jaw is the cornerstone of male facial attractiveness. Width, squareness, and definition of the jaw directly signal testosterone exposure." },
+  hair_length: { description: "AI assessment of how masculine the hair length and style appears.", why: "Shorter hair traditionally emphasises facial structure and is associated with masculinity." },
+  skin_quality: { description: "AI assessment of skin clarity and smoothness.", why: "Clear, smooth skin signals health and genetic fitness. It is a universal marker of attractiveness that correlates with hormonal balance and overall physical health." },
+  facial_fat: { description: "AI assessment of facial leanness.", why: "A lean face exposes underlying bone structure and enhances facial definition. Lower facial fat is strongly associated with perceived attractiveness and health in males." },
+  overall_impression: { description: "AI overall aesthetic impression based on bone structure.", why: "The overall impression captures how all facial features work together to create an attractive appearance." },
 };
 
-const VISION_UNIQUE_KEYS: Array<keyof typeof VISION_METRIC_LABELS> = [
-  "cheekbone_prominence",
-  "skin_quality",
-  "facial_fat",
-  "overall_impression",
+const ALL_DIMORPHISM_VISION_KEYS: Array<keyof typeof VISION_METRIC_LABELS> = [
+  "facial_hair", "neck", "eyebrow_thickness", "nose_masculinity",
+  "brow_ridge", "hairline", "eyes_dimorphism", "lip_masculinity",
+  "face_shape_dimorphism", "jaw_dimorphism", "hair_length",
+  "skin_quality", "facial_fat", "overall_impression",
 ];
 
 function GradientBar({ score }: { score: number }) {
@@ -69,7 +73,7 @@ function GradientBar({ score }: { score: number }) {
       background: "linear-gradient(to right, #ef4444, #f97316, #eab308, #22c55e, #22c55e, #eab308, #f97316, #ef4444)"
     }}>
       <div className="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-white border-2 border-zinc-300 rounded-full shadow"
-        style={{ left: `calc(${pct}% - 6px)` }} />
+        style={{ left: "calc(" + pct + "% - 6px)" }} />
     </div>
   );
 }
@@ -114,7 +118,7 @@ function CompositeMetricModal({ metric, onClose }: { metric: CompositeMetricInfo
             background: "linear-gradient(to right, #ef4444, #f97316, #eab308, #22c55e, #22c55e, #eab308, #f97316, #ef4444)"
           }}>
             <div className="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-white border-2 border-zinc-300 rounded-full shadow"
-              style={{ left: `calc(${pct}% - 6px)` }} />
+              style={{ left: "calc(" + pct + "% - 6px)" }} />
           </div>
           <p className="text-xs text-zinc-400 mt-1">{getScoreLabel(metric.score)}</p>
         </div>
@@ -157,18 +161,6 @@ export default function ResultsDisplay({ result, onReset }: ResultsDisplayProps)
 
   const angularityScore = result.metrics.find(m => m.definition.id === "angularity_score")?.score ?? 5.0;
   const dimorphismScore = result.metrics.find(m => m.definition.id === "dimorphism_score")?.score ?? 5.0;
-
-  const visionScore = useMemo(() => {
-    if (!result.visionScores) return null;
-    const scores = [
-      result.visionScores.jaw_definition, result.visionScores.cheekbone_prominence,
-      result.visionScores.skin_quality, result.visionScores.sexual_dimorphism,
-      result.visionScores.facial_fat, result.visionScores.overall_harmony,
-      result.visionScores.eye_appeal, result.visionScores.overall_impression,
-    ];
-    return scores.reduce((a, b) => a + b, 0) / scores.length;
-  }, [result.visionScores]);
-
   const finalScore = result.finalScore ?? result.overallScore;
   const getScore = (id: string) => result.metrics.find(r => r.definition.id === id)?.score ?? 5.0;
 
@@ -188,12 +180,6 @@ export default function ResultsDisplay({ result, onReset }: ResultsDisplayProps)
     "Brow Ridge": (getScore("eyebrow_tilt") * 0.6) + (getScore("brow_length_ratio") * 0.4),
     "Lips": (getScore("chin_philtrum") * 0.5) + (getScore("lower_third_proportion") * 0.5),
   };
-
-  const dimorphismVisionKeys: Array<keyof typeof VISION_METRIC_LABELS> = [
-    "facial_hair", "neck", "eyebrow_thickness", "nose_masculinity",
-    "brow_ridge", "hairline", "eyes_dimorphism", "lip_masculinity",
-    "face_shape_dimorphism", "jaw_dimorphism", "hair_length",
-  ];
 
   const handleMetricClick = (metricId: string) => {
     const index = result.metrics.findIndex(m => m.definition.id === metricId);
@@ -220,7 +206,6 @@ export default function ResultsDisplay({ result, onReset }: ResultsDisplayProps)
     { id: "angularity", label: "Angularity", score: angularityScore },
     { id: "dimorphism", label: "Dimorphism", score: dimorphismScore },
     { id: "features", label: "Features", score: featuresScore },
-    ...(result.visionScores ? [{ id: "vision" as Tab, label: "Vision", score: visionScore ?? 0 }] : []),
   ];
 
   const activeScore = tabs.find(t => t.id === activeTab)?.score ?? 0;
@@ -236,9 +221,7 @@ export default function ResultsDisplay({ result, onReset }: ResultsDisplayProps)
           <div className="flex items-center gap-1">
             {tabs.map(tab => (
               <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-                className={`px-4 py-1.5 text-sm font-medium rounded-full transition-all border ${
-                  activeTab === tab.id ? "bg-black text-white border-black" : "text-zinc-500 border-transparent hover:text-black"
-                }`}>
+                className={"px-4 py-1.5 text-sm font-medium rounded-full transition-all border " + (activeTab === tab.id ? "bg-black text-white border-black" : "text-zinc-500 border-transparent hover:text-black")}>
                 {tab.label}
               </button>
             ))}
@@ -262,7 +245,7 @@ export default function ResultsDisplay({ result, onReset }: ResultsDisplayProps)
           <div className="flex items-center gap-6">
             {tabs.map(tab => (
               <button key={tab.id} onClick={() => setActiveTab(tab.id)} className="text-left">
-                <p className={`text-xs mb-0.5 transition-colors ${activeTab === tab.id ? "text-black font-medium" : "text-zinc-400"}`}>
+                <p className={"text-xs mb-0.5 transition-colors " + (activeTab === tab.id ? "text-black font-medium" : "text-zinc-400")}>
                   {tab.label}
                 </p>
                 <p className="text-lg font-semibold leading-none" style={{ color: getScoreColor(tab.score) }}>
@@ -284,9 +267,7 @@ export default function ResultsDisplay({ result, onReset }: ResultsDisplayProps)
               </p>
             </div>
             <button onClick={() => setShowLandmarks(!showLandmarks)}
-              className={`px-3 py-1.5 text-xs font-medium rounded-full border transition-colors ${
-                showLandmarks ? "bg-black text-white border-black" : "bg-zinc-50 text-zinc-600 border-zinc-200 hover:border-zinc-400"
-              }`}>
+              className={"px-3 py-1.5 text-xs font-medium rounded-full border transition-colors " + (showLandmarks ? "bg-black text-white border-black" : "bg-zinc-50 text-zinc-600 border-zinc-200 hover:border-zinc-400")}>
               {showLandmarks ? "Landmarks ON" : "Landmarks OFF"}
             </button>
           </div>
@@ -306,8 +287,7 @@ export default function ResultsDisplay({ result, onReset }: ResultsDisplayProps)
               {activeTab === "harmony" ? harmonyMetrics.flatMap(c => c.metrics).filter(m => m.score !== null).length :
                activeTab === "features" ? featuresMetrics.flatMap(c => c.metrics).filter(m => m.score !== null).length :
                activeTab === "angularity" ? Object.keys(angularitySubScores).length :
-               activeTab === "dimorphism" ? Object.keys(dimorphismSubScores).length + (result.visionScores ? dimorphismVisionKeys.length : 0) :
-               VISION_UNIQUE_KEYS.length} metrics
+               Object.keys(dimorphismSubScores).length + (result.visionScores ? ALL_DIMORPHISM_VISION_KEYS.length : 0)} metrics
             </p>
           </div>
 
@@ -338,7 +318,7 @@ export default function ResultsDisplay({ result, onReset }: ResultsDisplayProps)
                   <MetricRow key={name} name={name} score={score} onClick={() => handleDimorphismGeoClick(name, score)} />
                 ))}
                 {result.visionScores ? (
-                  dimorphismVisionKeys.map(key =>
+                  ALL_DIMORPHISM_VISION_KEYS.map(key =>
                     result.visionScores![key] !== undefined && (
                       <MetricRow key={key} name={VISION_METRIC_LABELS[key]}
                         score={result.visionScores![key] as number}
@@ -354,31 +334,13 @@ export default function ResultsDisplay({ result, onReset }: ResultsDisplayProps)
                     <p className="text-sm text-zinc-500">Loading AI vision scores...</p>
                   </div>
                 )}
-              </>
-            )}
-
-            {activeTab === "vision" && result.visionScores && (
-              <>
-                {VISION_UNIQUE_KEYS.map(key => (
-                  <MetricRow key={key} name={VISION_METRIC_LABELS[key]} score={result.visionScores![key] as number} />
-                ))}
-                {result.visionScores.reasoning && (
+                {result.visionScores?.reasoning && (
                   <div className="p-5 border-t border-zinc-100">
                     <p className="text-xs text-zinc-400 mb-2">AI Analysis</p>
                     <p className="text-sm text-zinc-600 leading-relaxed">{result.visionScores.reasoning}</p>
                   </div>
                 )}
               </>
-            )}
-
-            {activeTab === "vision" && !result.visionScores && !result.visionError && (
-              <div className="flex items-center gap-3 p-6">
-                <svg className="w-5 h-5 text-zinc-400 animate-spin" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
-                </svg>
-                <p className="text-sm text-zinc-500">Analyzing facial features...</p>
-              </div>
             )}
           </div>
         </div>
@@ -404,3 +366,4 @@ export default function ResultsDisplay({ result, onReset }: ResultsDisplayProps)
     </div>
   );
 }
+ENDOFFILE
