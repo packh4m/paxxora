@@ -140,13 +140,11 @@ export const METRIC_DEFINITIONS: MetricDefinition[] = [
 
   // ===================== BROWS =====================
   { id: "eyebrow_tilt", name: "Eyebrow Tilt", category: "Brows", idealMin: 6.5, idealMax: 11.0, unit: "°", description: "Upward angle of brow from medial to lateral", isDetectable: true },
-  { id: "brow_eye_distance", name: "Eyebrow Low Setedness", category: "Brows", idealMin: 0.00, idealMax: 0.45, unit: "x", description: "Brow to eye distance / eye height ratio", isDetectable: true },
   { id: "brow_length_ratio", name: "Brow Length to Face Width Ratio", category: "Brows", idealMin: 0.69, idealMax: 0.76, unit: "x", description: "Brow length relative to face width", isDetectable: true },
 
   // ===================== FEATURES =====================
   { id: "cheekbone_height", name: "Cheekbone Height", category: "Features", idealMin: 83.0, idealMax: 100.0, unit: "%", description: "Cheekbone position relative to sellion-menton height", isDetectable: true },
   { id: "cupids_bow_depth", name: "Cupid's Bow Depth", category: "Features", idealMin: 2.30, idealMax: 4.00, unit: "mm", description: "Depth of cupid's bow curve", isDetectable: true },
-  { id: "mouth_corner_position", name: "Mouth Corner Position", category: "Features", idealMin: 0.0, idealMax: 4.0, unit: "mm", description: "Mouth corner upturn", isDetectable: true, asymmetricScoring: true },
   { id: "ear_protrusion_ratio", name: "Ear Protrusion Ratio", category: "Features", idealMin: 8.0, idealMax: 12.0, unit: "%", description: "Ear protrusion relative to face width", isDetectable: true },
   { id: "ear_protrusion_angle", name: "Ear Protrusion Angle", category: "Features", idealMin: 10.0, idealMax: 11.5, unit: "°", description: "Angle of ear from skull", isDetectable: true },
 
