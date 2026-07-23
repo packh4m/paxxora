@@ -317,15 +317,15 @@ export function calculateAllMetrics(faceLandmarks: FaceLandmarks): MetricResult[
         }
 
         case "alar_angle": {
-  const leftAngle = Math.atan2(
-    Math.abs(L[35].y - L[16].y),
-    Math.abs(L[35].x - L[16].x)
-  ) * (180 / Math.PI);
-  const rightAngle = Math.atan2(
-    Math.abs(L[35].y - L[27].y),
-    Math.abs(L[35].x - L[27].x)
-  ) * (180 / Math.PI);
-  value = (leftAngle + rightAngle) / 2;
+  // Angle at nose bottom (L[35]) between left eye hood (L[16]) and right eye hood (L[27])
+  const leftVecX = L[16].x - L[35].x;
+  const leftVecY = L[16].y - L[35].y;
+  const rightVecX = L[27].x - L[35].x;
+  const rightVecY = L[27].y - L[35].y;
+  const dot = leftVecX * rightVecX + leftVecY * rightVecY;
+  const leftLen = Math.hypot(leftVecX, leftVecY);
+  const rightLen = Math.hypot(rightVecX, rightVecY);
+  value = Math.acos(dot / (leftLen * rightLen)) * (180 / Math.PI);
   break;
 }
 
