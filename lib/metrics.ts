@@ -317,29 +317,17 @@ export function calculateAllMetrics(faceLandmarks: FaceLandmarks): MetricResult[
         }
 
         case "alar_angle": {
-          // Angle of alar rim from nose midline
-          // Nose axis: Sellion (34) to Subnasale (35)
-          const noseAxisX = L[35].x - L[34].x;
-          const noseAxisY = L[35].y - L[34].y;
-          const noseLen = Math.hypot(noseAxisX, noseAxisY);
-
-          // Left alar vector from subnasale
-          const leftVecX = L[4].x - L[35].x;
-          const leftVecY = L[4].y - L[35].y;
-          const leftLen = Math.hypot(leftVecX, leftVecY);
-          const leftDot = (noseAxisX * leftVecX + noseAxisY * leftVecY) / (noseLen * leftLen);
-          const leftAngle = Math.acos(Math.max(-1, Math.min(1, leftDot))) * (180 / Math.PI);
-
-          // Right alar vector from subnasale
-          const rightVecX = L[5].x - L[35].x;
-          const rightVecY = L[5].y - L[35].y;
-          const rightLen = Math.hypot(rightVecX, rightVecY);
-          const rightDot = (noseAxisX * rightVecX + noseAxisY * rightVecY) / (noseLen * rightLen);
-          const rightAngle = Math.acos(Math.max(-1, Math.min(1, rightDot))) * (180 / Math.PI);
-
-          value = (leftAngle + rightAngle) / 2;
-          break;
-        }
+  const leftAngle = Math.atan2(
+    Math.abs(L[35].y - L[16].y),
+    Math.abs(L[35].x - L[16].x)
+  ) * (180 / Math.PI);
+  const rightAngle = Math.atan2(
+    Math.abs(L[35].y - L[27].y),
+    Math.abs(L[35].x - L[27].x)
+  ) * (180 / Math.PI);
+  value = (leftAngle + rightAngle) / 2;
+  break;
+}
 
         case "iaa_jfa_deviation": {
           // IAA: angle at subnasale (L[35]) between left eyelid hood (L[16]) and right eyelid hood (L[27])
