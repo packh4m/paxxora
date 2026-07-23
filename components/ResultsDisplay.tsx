@@ -121,6 +121,9 @@ function CompositeMetricModal({ metric, onClose }: { metric: CompositeMetricInfo
               style={{ left: `calc(${pct}% - 6px)` }} />
           </div>
           <p className="text-xs text-zinc-400 mt-1">{getScoreLabel(metric.score)}</p>
+<p className="text-xs font-medium text-zinc-600 mt-1.5 bg-zinc-100 px-2 py-1 rounded-md inline-block">
+  Better than {getPercentile(metric.score)}% of males
+</p>
         </div>
         <div className="px-6 py-4 border-b border-zinc-100">
           <p className="text-xs font-mono uppercase tracking-widest text-zinc-400 mb-2">What it measures</p>
