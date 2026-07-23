@@ -4,6 +4,7 @@ import { useEffect, useCallback, useState } from "react";
 import { MetricResult, Point } from "@/lib/types";
 import { getScoreColor, getScoreLabel, getPercentile } from "@/lib/scoring";
 import LandmarkEditor from "./LandmarkEditor";
+import { METRIC_INSIGHTS } from "@/lib/insights";
 
 interface MetricDetailModalProps {
   metric: MetricResult;
