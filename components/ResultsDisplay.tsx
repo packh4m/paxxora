@@ -341,6 +341,7 @@ export default function ResultsDisplay({ result, onReset, onResultUpdate }: Resu
                     <p className="text-sm text-zinc-500">Loading AI vision scores...</p>
                   </div>
                 )}
+              </>
             )}
           </div>
         </div>
