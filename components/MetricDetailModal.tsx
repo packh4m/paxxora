@@ -143,8 +143,14 @@ export default function MetricDetailModal({
       case "chin_philtrum": line(L(35), L(42)); line(L(42), L(7)); dot(L(35)); dot(L(42)); dot(L(7)); label(valueStr, mid(L(42), L(7)), 16); break;
       case "canthal_tilt": line(L(12), L(13)); line(L(23), L(24)); dot(L(12)); dot(L(13)); dot(L(23)); dot(L(24)); label(valueStr, mid(L(12), L(13)), -14); break;
       case "midface_ratio": { const midX = (L(2).x + L(3).x) / 2; const midY = (L(2).y + L(3).y) / 2; line(L(2), L(3)); line({ x: midX, y: midY }, { x: midX, y: L(40).y }); dot(L(2)); dot(L(3)); dot(L(40)); label(valueStr, { x: midX, y: midY }, -14); break; }
-      case "top_third": { const g = mid(L(18), L(29)); line(L(1), g); dot(L(1)); dot(g); label(valueStr, mid(L(1), g), 16); break; }
-      case "face_width_height": line(L(51), L(52)); dot(L(51)); dot(L(52)); label(valueStr, mid(L(51), L(52)), -14); break;
+case "top_third": {
+  const browMidY = (L(17).y + L(18).y + L(28).y + L(29).y) / 4;
+  const browMidX = (L(17).x + L(18).x + L(28).x + L(29).x) / 4;
+  line(L(1), { x: L(1).x, y: browMidY });
+  dot(L(1)); dot(L(17)); dot(L(18)); dot(L(28)); dot(L(29));
+  label(valueStr, { x: L(1).x, y: (L(1).y + browMidY) / 2 }, 0);
+  break;
+}      case "face_width_height": line(L(51), L(52)); dot(L(51)); dot(L(52)); label(valueStr, mid(L(51), L(52)), -14); break;
       case "brow_eye_distance": line(L(18), L(2)); line(L(29), L(3), true); dot(L(18)); dot(L(2)); dot(L(29)); dot(L(3)); label(valueStr, mid(L(18), L(2)), 16); break;
       case "total_face_width_height": line(L(51), L(52)); line(L(1), L(7)); dot(L(51)); dot(L(52)); dot(L(1)); dot(L(7)); label(valueStr, mid(L(51), L(52)), -14); break;
       case "eye_separation": line(L(2), L(3)); line(L(51), L(52), true); dot(L(2)); dot(L(3)); dot(L(51)); dot(L(52)); label(valueStr, mid(L(2), L(3)), -14); break;
