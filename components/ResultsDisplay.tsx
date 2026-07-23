@@ -320,12 +320,6 @@ export default function ResultsDisplay({ result, onReset, onResultUpdate }: Resu
                 {activeScore.toFixed(2)}<span className="text-xs text-zinc-400 font-normal ml-1">/10</span>
               </p>
             </div>
-            <button onClick={() => setShowLandmarks(!showLandmarks)}
-              className={`px-3 py-1.5 text-xs font-medium rounded-full border transition-colors ${
-                showLandmarks ? "bg-black text-white border-black" : "bg-zinc-50 text-zinc-600 border-zinc-200 hover:border-zinc-400"
-              }`}>
-              {showLandmarks ? "Landmarks ON" : "Landmarks OFF"}
-            </button>
           </div>
           <div className="flex-1 relative overflow-hidden rounded-b-2xl">
             {showLandmarks && result.landmarks && result.imageWidth && result.imageHeight ? (
