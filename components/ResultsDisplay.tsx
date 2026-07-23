@@ -98,10 +98,10 @@ function MetricRow({ name, value, score, onClick, onMouseEnter, onMouseLeave }: 
       <div className="flex-1 min-w-0">
         <p className="text-sm text-zinc-700 truncate">{name}</p>
         {value && (
-          <span className="text-xs text-zinc-400 bg-zinc-100 px-1.5 py-0.5 rounded mt-0.5 inline-block opacity-0 group-hover:opacity-100 transition-opacity">
-            {value}
-          </span>
-        )}
+  <span className="text-xs text-zinc-400 bg-zinc-100 px-1.5 py-0.5 rounded mt-0.5 inline-block">
+    {value}
+  </span>
+)}
       </div>
       <div className="w-28 flex-shrink-0"><GradientBar score={score} /></div>
       <span className="text-sm font-semibold w-10 text-right flex-shrink-0" style={{ color }}>{score.toFixed(2)}</span>
