@@ -489,15 +489,15 @@ export function calculateAllMetrics(faceLandmarks: FaceLandmarks): MetricResult[
 
         // ============ LIPS ============
         case "lip_ratio": {
-          // Lower lip (42 to 6) / Upper lip (40 to 42)
-          const upperLipHeight = Math.abs(L[42].y - L[40].y);
-          const lowerLipHeight = Math.abs(L[6].y - L[42].y);
-          if (upperLipHeight > 5 && lowerLipHeight > 5) {
-            value = lowerLipHeight / upperLipHeight;
-          } else {
-            value = 1.5;
-          }
-          break;
+  const upperLipHeight = Math.abs(L[42].y - L[40].y);
+  const lowerLipHeight = Math.abs(L[6].y - L[42].y);
+  if (upperLipHeight > 0 && lowerLipHeight > 0) {
+    value = lowerLipHeight / upperLipHeight;
+  } else {
+    value = 1.5;
+  }
+  break;
+}
         }
 
         // ============ BROWS ============
