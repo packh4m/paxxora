@@ -295,3 +295,12 @@ export function formatMetricValue(
       return value.toFixed(2);
   }
 }
+
+export function getPercentile(score: number): number {
+  // Maps 0-10 score to population percentile (better than X% of males)
+  const s = Math.max(0, Math.min(10, score));
+  // Sigmoid-style curve: 5.0 = 50th percentile, 8.0 ≈ 84th, 9.5 ≈ 97th
+  const z = (s - 5) / 1.8;
+  const percentile = 100 / (1 + Math.exp(-z * 1.2));
+  return Math.round(Math.max(1, Math.min(99, percentile)));
+}
