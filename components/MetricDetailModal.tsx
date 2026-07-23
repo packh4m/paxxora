@@ -165,7 +165,14 @@ case "middle_third": {
 }      case "bigonial_width": line(L(43), L(44)); line(L(51), L(52), true); dot(L(43)); dot(L(44)); dot(L(51)); dot(L(52)); label(valueStr, mid(L(43), L(44)), 16); break;
       case "lower_third_proportion": line(L(35), L(42)); line(L(42), L(7), true); dot(L(35)); dot(L(42)); dot(L(7)); label(valueStr, mid(L(35), L(42)), 16); break;
       case "mouth_nose_ratio": line(L(38), L(39)); line(L(4), L(5), true); dot(L(38)); dot(L(39)); dot(L(4)); dot(L(5)); label(valueStr, mid(L(38), L(39)), 16); break;
-      case "jaw_frontal_angle": line(L(45), L(47)); line(L(46), L(48)); dot(L(45)); dot(L(46)); dot(L(47)); dot(L(48)); label(valueStr, mid(L(45), L(47)), 16); break;
+      case "jaw_frontal_angle": {
+  const chinMid = mid(mid(L(47), L(48)), mid(L(45), L(46)));
+  line(L(45), chinMid);
+  line(L(46), chinMid);
+  dot(L(45)); dot(L(46)); dot(chinMid);
+  label(valueStr, { x: chinMid.x - 40, y: chinMid.y + 16 }, 0);
+  break;
+}
       case "alar_angle": line(L(16), L(35)); line(L(27), L(35)); dot(L(16)); dot(L(27)); dot(L(35)); label(valueStr, L(35), 20); break;
       case "neck_width": line(L(49), L(50)); line(L(51), L(52), true); dot(L(49)); dot(L(50)); dot(L(51)); dot(L(52)); label(valueStr, mid(L(49), L(50)), 16); break;
       case "bitemporal_width": line(L(10), L(11)); line(L(51), L(52), true); dot(L(10)); dot(L(11)); dot(L(51)); dot(L(52)); label(valueStr, mid(L(10), L(11)), -14); break;
