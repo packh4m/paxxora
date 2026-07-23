@@ -4,10 +4,10 @@ import { useState, useMemo } from "react";
 import { AnalysisResult, MetricCategory, VISION_METRIC_LABELS } from "@/lib/types";
 import LandmarkOverlay from "./LandmarkOverlay";
 import MetricDetailModal from "./MetricDetailModal";
-import { calculateAllMetrics } from "@/lib/metrics";
-import { getScoreColor, getScoreLabel, calculateOverallScore, getPercentile } from "@/lib/scoring";
-import Link from "next/link";
 import MeasurementOverlay from "./MeasurementOverlay";
+import { calculateAllMetrics } from "@/lib/metrics";
+import { getScoreColor, getScoreLabel, calculateOverallScore } from "@/lib/scoring";
+import Link from "next/link";
 
 interface ResultsDisplayProps {
   result: AnalysisResult;
@@ -80,7 +80,9 @@ function GradientBar({ score }: { score: number }) {
 }
 
 function MetricRow({ name, value, score, onClick, onMouseEnter, onMouseLeave }: {
-  name: string; value?: string; score: number;
+  name: string;
+  value?: string;
+  score: number;
   onClick?: () => void;
   onMouseEnter?: () => void;
   onMouseLeave?: () => void;
@@ -91,7 +93,8 @@ function MetricRow({ name, value, score, onClick, onMouseEnter, onMouseLeave }: 
       onClick={onClick}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
-      className="group w-full flex items-center gap-4 py-3 px-4 text-left transition-all hover:bg-zinc-50 border-b border-zinc-100 last:border-0">
+      className="group w-full flex items-center gap-4 py-3 px-4 text-left transition-all hover:bg-zinc-50 border-b border-zinc-100 last:border-0"
+    >
       <div className="flex-1 min-w-0">
         <p className="text-sm text-zinc-700 truncate">{name}</p>
         {value && (
@@ -135,9 +138,6 @@ function CompositeMetricModal({ metric, onClose }: { metric: CompositeMetricInfo
               style={{ left: `calc(${pct}% - 6px)` }} />
           </div>
           <p className="text-xs text-zinc-400 mt-1">{getScoreLabel(metric.score)}</p>
-<p className="text-xs font-medium text-zinc-600 mt-1.5 bg-zinc-100 px-2 py-1 rounded-md inline-block">
-  Better than {getPercentile(metric.score)}% of males
-</p>
         </div>
         <div className="px-6 py-4 border-b border-zinc-100">
           <p className="text-xs font-mono uppercase tracking-widest text-zinc-400 mb-2">What it measures</p>
@@ -347,6 +347,7 @@ export default function ResultsDisplay({ result, onReset, onResultUpdate }: Resu
               </div>
             )}
           </div>
+        </div>
 
         <div className="flex-1 flex flex-col overflow-hidden rounded-2xl bg-white border border-zinc-200 shadow-sm">
           <div className="flex-shrink-0 px-6 py-3 border-b border-zinc-100 flex items-center justify-between">
@@ -360,13 +361,16 @@ export default function ResultsDisplay({ result, onReset, onResultUpdate }: Resu
 
           <div className="flex-1 overflow-y-auto">
             {activeTab === "harmony" && sortedHarmonyMetrics.map(metric => (
-  <MetricRow key={metric.definition.id} name={metric.definition.name}
-    value={metric.value !== null ? String(metric.value.toFixed(2)) : undefined}
-    score={metric.score!}
-    onClick={() => handleMetricClick(metric.definition.id)}
-    onMouseEnter={() => setHoveredMetricId(metric.definition.id)}
-    onMouseLeave={() => setHoveredMetricId(null)} />
-))}
+              <MetricRow
+                key={metric.definition.id}
+                name={metric.definition.name}
+                value={metric.value !== null ? String(metric.value.toFixed(2)) : undefined}
+                score={metric.score!}
+                onClick={() => handleMetricClick(metric.definition.id)}
+                onMouseEnter={() => setHoveredMetricId(metric.definition.id)}
+                onMouseLeave={() => setHoveredMetricId(null)}
+              />
+            ))}
 
             {activeTab === "angularity" && sortedAngularityEntries.map(([name, score]) => (
               <MetricRow key={name} name={name} score={score} onClick={() => handleAngularityClick(name, score)} />
