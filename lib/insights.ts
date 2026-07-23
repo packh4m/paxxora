@@ -1,4 +1,4 @@
-export interface Insight {
+pexport interface Insight {
   condition: (score: number) => boolean;
   label: string;
   description: string;
@@ -28,8 +28,8 @@ export const METRIC_INSIGHTS: Record<string, Insight[]> = {
     { condition: s => s < 5, label: "Narrow facial structure", description: "The face is noticeably narrow, reducing the appearance of masculine bone structure.", impact: "-5.8%", type: "negative" },
   ],
   total_face_width_height: [
-    { condition: s => s >= 8, label: "Ideal facial proportions", description: "Your total facial height-to-width ratio is well balanced, contributing to an attractive appearance.", impact: "+3.5%", type: "positive" },
-    { condition: s => s >= 5 && s < 8, label: "Slightly elongated face", description: "The face is marginally long relative to its width, slightly softening the overall structure.", impact: "-2.0%", type: "negative" },
+    { condition: s => s >= 8, label: "Ideal facial proportions", description: "Your total facial height-to-width ratio is well balanced.", impact: "+3.5%", type: "positive" },
+    { condition: s => s >= 5 && s < 8, label: "Slightly elongated face", description: "The face is marginally long relative to its width.", impact: "-2.0%", type: "negative" },
     { condition: s => s < 5, label: "Elongated face shape", description: "The face is notably elongated, reducing the impact of masculine bone structure.", impact: "-4.9%", type: "negative" },
   ],
   midface_ratio: [
@@ -99,7 +99,7 @@ export const METRIC_INSIGHTS: Record<string, Insight[]> = {
   ],
   lower_third_proportion: [
     { condition: s => s >= 8, label: "Ideal lip-to-chin ratio", description: "Your philtrum-to-chin proportion is well-balanced within the lower third.", impact: "+3.6%", type: "positive" },
-    { condition: s => s >= 5 && s < 8, label: "Slightly long philtrum", description: "The philtrum is marginally long relative to the chin, slightly affecting lower face balance.", impact: "-1.8%", type: "negative" },
+    { condition: s => s >= 5 && s < 8, label: "Slightly long philtrum", description: "The philtrum is marginally long relative to the chin.", impact: "-1.8%", type: "negative" },
     { condition: s => s < 5, label: "Long philtrum", description: "A notably long philtrum relative to chin height disrupts lower facial proportions.", impact: "-4.4%", type: "negative" },
   ],
   chin_philtrum: [
@@ -124,7 +124,7 @@ export const METRIC_INSIGHTS: Record<string, Insight[]> = {
   ],
   brow_length_ratio: [
     { condition: s => s >= 8, label: "Ideal brow length", description: "Your brow length relative to face width is well-proportioned.", impact: "+2.8%", type: "positive" },
-    { condition: s => s >= 5 && s < 8, label: "Slightly short brows", description: "Brows are marginally short relative to face width, slightly reducing framing impact.", impact: "-1.4%", type: "negative" },
+    { condition: s => s >= 5 && s < 8, label: "Slightly short brows", description: "Brows are marginally short relative to face width.", impact: "-1.4%", type: "negative" },
     { condition: s => s < 5, label: "Short brows", description: "Short brows relative to face width reduce the framing of the eyes.", impact: "-3.6%", type: "negative" },
   ],
   cheekbone_height: [
@@ -143,7 +143,7 @@ export const METRIC_INSIGHTS: Record<string, Insight[]> = {
     { condition: s => s < 5, label: "Significant angle deviation", description: "A notable mismatch between alar and jaw angles disrupts structural facial harmony.", impact: "-4.6%", type: "negative" },
   ],
   ear_protrusion_ratio: [
-    { condition: s => s >= 8, label: "Ideal ear position", description: "Your ear protrusion is within the ideal range, contributing to facial balance.", impact: "+2.1%", type: "positive" },
+    { condition: s => s >= 8, label: "Ideal ear position", description: "Your ear protrusion is within the ideal range.", impact: "+2.1%", type: "positive" },
     { condition: s => s >= 5 && s < 8, label: "Slightly protruding ears", description: "Ears are marginally prominent, slightly affecting facial symmetry.", impact: "-1.2%", type: "negative" },
     { condition: s => s < 5, label: "Prominent ears", description: "Notably prominent ears draw attention away from facial features.", impact: "-3.0%", type: "negative" },
   ],
@@ -152,4 +152,69 @@ export const METRIC_INSIGHTS: Record<string, Insight[]> = {
     { condition: s => s >= 5 && s < 8, label: "Moderate ear angle", description: "Ear angle is within acceptable range but could be closer to the head.", impact: "-1.0%", type: "negative" },
     { condition: s => s < 5, label: "Wide ear angle", description: "A wide ear angle increases the appearance of ear protrusion.", impact: "-2.8%", type: "negative" },
   ],
+  // Angularity composites
+  "Jaw Definition": [
+    { condition: s => s >= 8, label: "Sharp jaw definition", description: "Your jaw angle and slope combine to create a well-defined, angular jawline.", impact: "+5.4%", type: "positive" },
+    { condition: s => s >= 5 && s < 8, label: "Moderate jaw definition", description: "Jaw definition is acceptable but sharper angles would significantly enhance masculine impact.", impact: "-2.7%", type: "negative" },
+    { condition: s => s < 5, label: "Weak jaw definition", description: "Soft jaw angles significantly reduce masculine facial structure and definition.", impact: "-6.8%", type: "negative" },
+  ],
+  "Chin Definition": [
+    { condition: s => s >= 8, label: "Well-defined chin", description: "Your chin projects well and creates a strong lower face anchor.", impact: "+4.5%", type: "positive" },
+    { condition: s => s >= 5 && s < 8, label: "Moderate chin definition", description: "Chin definition is acceptable but stronger projection would improve lower face structure.", impact: "-2.3%", type: "negative" },
+    { condition: s => s < 5, label: "Weak chin", description: "A weak chin significantly reduces lower facial definition and overall facial balance.", impact: "-5.9%", type: "negative" },
+  ],
+  "Cheekbone Prominence": [
+    { condition: s => s >= 8, label: "Prominent cheekbones", description: "High, well-defined cheekbones create strong facial architecture.", impact: "+5.2%", type: "positive" },
+    { condition: s => s >= 5 && s < 8, label: "Moderate cheekbone prominence", description: "Cheekbones are present but higher placement would enhance facial definition.", impact: "-2.6%", type: "negative" },
+    { condition: s => s < 5, label: "Low cheekbone prominence", description: "Low or flat cheekbones significantly reduce facial definition and structure.", impact: "-6.3%", type: "negative" },
+  ],
+  "Cheek Leanness": [
+    { condition: s => s >= 8, label: "Lean facial structure", description: "Low facial fat reveals strong underlying bone architecture.", impact: "+4.8%", type: "positive" },
+    { condition: s => s >= 5 && s < 8, label: "Moderate cheek leanness", description: "Facial fat is within range but reduction would expose more bone structure.", impact: "-2.2%", type: "negative" },
+    { condition: s => s < 5, label: "Excess facial fat", description: "Excess cheek fat obscures bone structure and significantly reduces facial definition.", impact: "-5.5%", type: "negative" },
+  ],
+  "Submental Definition": [
+    { condition: s => s >= 8, label: "Clean neck-jaw line", description: "A sharp neck-to-jaw transition creates strong submental definition.", impact: "+3.9%", type: "positive" },
+    { condition: s => s >= 5 && s < 8, label: "Moderate submental definition", description: "The neck-jaw boundary is acceptable but could be sharper.", impact: "-2.0%", type: "negative" },
+    { condition: s => s < 5, label: "Soft submental region", description: "A blurred neck-jaw boundary significantly reduces facial sharpness.", impact: "-5.1%", type: "negative" },
+  ],
+  // Dimorphism composites
+  "Jaw": [
+    { condition: s => s >= 8, label: "Highly masculine jaw", description: "Your jaw width, angle and slope all signal strong androgenic development.", impact: "+6.2%", type: "positive" },
+    { condition: s => s >= 5 && s < 8, label: "Moderately masculine jaw", description: "Jaw masculinity is acceptable but width and angularity could be stronger.", impact: "-2.8%", type: "negative" },
+    { condition: s => s < 5, label: "Low jaw masculinity", description: "A narrow or soft jaw significantly reduces masculine facial impact.", impact: "-7.1%", type: "negative" },
+  ],
+  "Eyes": [
+    { condition: s => s >= 8, label: "Strong hunter eyes", description: "Your eye shape and canthal tilt strongly signal masculine dominance.", impact: "+5.8%", type: "positive" },
+    { condition: s => s >= 5 && s < 8, label: "Moderate eye masculinity", description: "Eye shape is acceptable but more hooding or tilt would enhance masculine appeal.", impact: "-2.9%", type: "negative" },
+    { condition: s => s < 5, label: "Feminine eye shape", description: "Round or downward-slanting eyes significantly reduce masculine facial appeal.", impact: "-7.1%", type: "negative" },
+  ],
+  "Face Shape": [
+    { condition: s => s >= 8, label: "Masculine face shape", description: "Your facial width-to-height ratio signals strong androgenic bone development.", impact: "+5.1%", type: "positive" },
+    { condition: s => s >= 5 && s < 8, label: "Moderate face shape masculinity", description: "Face shape is acceptable but wider proportions would enhance masculine impact.", impact: "-2.3%", type: "negative" },
+    { condition: s => s < 5, label: "Feminine face shape", description: "An elongated or narrow face shape significantly reduces masculine facial impact.", impact: "-5.8%", type: "negative" },
+  ],
+  "Nose": [
+    { condition: s => s >= 8, label: "Masculine nose", description: "Your nose width and prominence signal strong androgenic development.", impact: "+3.4%", type: "positive" },
+    { condition: s => s >= 5 && s < 8, label: "Moderate nose masculinity", description: "Nose masculinity is acceptable but wider proportions would enhance dimorphism.", impact: "-1.9%", type: "negative" },
+    { condition: s => s < 5, label: "Feminine nose", description: "A narrow or small nose relative to the face reduces masculine facial impact.", impact: "-4.6%", type: "negative" },
+  ],
+  "Brow Ridge": [
+    { condition: s => s >= 8, label: "Strong brow ridge", description: "Your brow tilt and length create a prominent, masculine brow ridge.", impact: "+3.7%", type: "positive" },
+    { condition: s => s >= 5 && s < 8, label: "Moderate brow ridge", description: "Brow ridge is acceptable but more prominence would enhance masculine expression.", impact: "-1.9%", type: "negative" },
+    { condition: s => s < 5, label: "Weak brow ridge", description: "A flat or arched brow ridge significantly reduces masculine facial expression.", impact: "-4.8%", type: "negative" },
+  ],
+  "Lips": [
+    { condition: s => s >= 8, label: "Masculine lip proportion", description: "Your lip-to-chin proportions signal masculine lower facial structure.", impact: "+3.6%", type: "positive" },
+    { condition: s => s >= 5 && s < 8, label: "Moderate lip masculinity", description: "Lip proportions are acceptable but thinner lips relative to chin would enhance masculinity.", impact: "-1.8%", type: "negative" },
+    { condition: s => s < 5, label: "Feminine lip proportion", description: "Full lips relative to chin height reduce masculine lower facial impact.", impact: "-4.4%", type: "negative" },
+  ],
 };
+
+export function getSeverity(impactStr: string): { label: string; color: string; bg: string; border: string } {
+  const val = Math.abs(parseFloat(impactStr.replace("%", "")));
+  if (val >= 5.5) return { label: "EXTREME", color: "text-red-700", bg: "bg-red-50", border: "border-red-200" };
+  if (val >= 3.5) return { label: "SEVERE", color: "text-orange-700", bg: "bg-orange-50", border: "border-orange-200" };
+  if (val >= 2.0) return { label: "MODERATE", color: "text-yellow-700", bg: "bg-yellow-50", border: "border-yellow-200" };
+  return { label: "MINOR", color: "text-zinc-500", bg: "bg-zinc-50", border: "border-zinc-200" };
+}
