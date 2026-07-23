@@ -341,13 +341,6 @@ export default function ResultsDisplay({ result, onReset, onResultUpdate }: Resu
                     <p className="text-sm text-zinc-500">Loading AI vision scores...</p>
                   </div>
                 )}
-                {result.visionScores?.reasoning && (
-                  <div className="p-5 border-t border-zinc-100">
-                    <p className="text-xs text-zinc-400 mb-2">AI Analysis</p>
-                    <p className="text-sm text-zinc-600 leading-relaxed">{result.visionScores.reasoning}</p>
-                  </div>
-                )}
-              </>
             )}
           </div>
         </div>
