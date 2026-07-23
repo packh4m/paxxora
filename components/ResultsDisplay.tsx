@@ -7,6 +7,7 @@ import MetricDetailModal from "./MetricDetailModal";
 import { calculateAllMetrics } from "@/lib/metrics";
 import { getScoreColor, getScoreLabel, calculateOverallScore, getPercentile } from "@/lib/scoring";
 import Link from "next/link";
+import MeasurementOverlay from "./MeasurementOverlay";
 
 interface ResultsDisplayProps {
   result: AnalysisResult;
