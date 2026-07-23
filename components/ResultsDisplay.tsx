@@ -328,13 +328,25 @@ export default function ResultsDisplay({ result, onReset, onResultUpdate }: Resu
             </button>
           </div>
           <div className="flex-1 relative overflow-hidden rounded-b-2xl">
-            {showLandmarks && result.landmarks && result.imageWidth && result.imageHeight ? (
-              <LandmarkOverlay imageUrl={result.imageUrl} landmarks={result.landmarks} imageWidth={result.imageWidth} imageHeight={result.imageHeight} />
-            ) : (
-              <img src={result.imageUrl} alt="Analyzed photo" className="w-full h-full object-cover" />
-            )}
-          </div>
-        </div>
+  {showLandmarks && result.landmarks && result.imageWidth && result.imageHeight ? (
+    <LandmarkOverlay imageUrl={result.imageUrl} landmarks={result.landmarks} imageWidth={result.imageWidth} imageHeight={result.imageHeight} />
+  ) : (
+    <div className="relative w-full h-full">
+      <img src={result.imageUrl} alt="Analyzed photo" className="w-full h-full object-cover" />
+      {hoveredMetricId && result.landmarks && result.imageWidth && result.imageHeight && (() => {
+        const metric = result.metrics.find(m => m.definition.id === hoveredMetricId);
+        return metric ? (
+          <MeasurementOverlay
+            metric={metric}
+            landmarks={result.landmarks!}
+            imageWidth={result.imageWidth!}
+            imageHeight={result.imageHeight!}
+          />
+        ) : null;
+      })()}
+    </div>
+  )}
+</div>
 
         <div className="flex-1 flex flex-col overflow-hidden rounded-2xl bg-white border border-zinc-200 shadow-sm">
           <div className="flex-shrink-0 px-6 py-3 border-b border-zinc-100 flex items-center justify-between">
