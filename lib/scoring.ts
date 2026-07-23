@@ -16,7 +16,7 @@ const METRIC_SIGMA: Record<string, number> = {
   "nose_bridge_width": 0.28,      // value 2.41, ideal 2.06-2.14, score 5.0
   "ear_protrusion_angle": 6.0,    // value 16.4, ideal 10.0-11.5, score 5.6
   "ear_protrusion_ratio": 2.5,    // value 14.5, ideal 8.0-12.0, score 6.0
-  "lower_third": 3.0,             // value 38.8, ideal 33.9-37.0, score 6.3
+  "lower_third": 1.5,             // value 38.8, ideal 33.9-37.0, score 6.3
   "cheekbone_height": 10.0,       // value 76.4, ideal 83.0-100.0, score 7.2
   "lip_ratio": 0.4,               // value 1.24, ideal 1.55-1.85, score 8.1
   "chin_philtrum": 0.5,           // value 2.62, ideal 2.15-2.45, score 9.0
