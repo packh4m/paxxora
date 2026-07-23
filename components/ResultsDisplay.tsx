@@ -148,6 +148,7 @@ export default function ResultsDisplay({ result, onReset, onResultUpdate }: Resu
   const [showLandmarks, setShowLandmarks] = useState(false);
   const [selectedMetricIndex, setSelectedMetricIndex] = useState<number | null>(null);
   const [selectedComposite, setSelectedComposite] = useState<CompositeMetricInfo | null>(null);
+  const [hoveredMetricId, setHoveredMetricId] = useState<string | null>(null);
 
   const getScore = (id: string) => result.metrics.find(r => r.definition.id === id)?.score ?? 5.0;
 
