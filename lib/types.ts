@@ -148,6 +148,4 @@ export const METRIC_DEFINITIONS: MetricDefinition[] = [
   { id: "ear_protrusion_angle", name: "Ear Protrusion Angle", category: "Features", idealMin: 10.0, idealMax: 11.5, unit: "°", description: "Angle of ear from skull", isDetectable: true },
 
   // ===================== COMPOSITE =====================
-  { id: "angularity_score", name: "Angularity Score", category: "Features", idealMin: 8.0, idealMax: 10.0, unit: "x", description: "Composite score of jaw, chin, cheekbone, and facial leanness", isDetectable: true },
-  { id: "dimorphism_score", name: "Dimorphism Score", category: "Features", idealMin: 8.0, idealMax: 10.0, unit: "x", description: "Composite score of sexual dimorphism and masculinity", isDetectable: true },
 ];
