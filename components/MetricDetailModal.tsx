@@ -298,7 +298,7 @@ case "middle_third": {
         </svg>
       </button>
 
-      <div className="w-full max-w-4xl bg-white rounded-2xl overflow-hidden shadow-2xl border border-zinc-200">
+      <div className="w-full max-w-6xl bg-white rounded-2xl overflow-hidden shadow-2xl border border-zinc-200">
 
         <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-100">
           <div className="flex items-center gap-3">
