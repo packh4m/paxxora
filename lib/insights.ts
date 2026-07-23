@@ -1,4 +1,4 @@
-pexport interface Insight {
+export interface Insight {
   condition: (score: number) => boolean;
   label: string;
   description: string;
