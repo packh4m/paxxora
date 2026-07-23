@@ -312,7 +312,7 @@ case "middle_third": {
           </button>
         </div>
 
-        <div className="flex flex-col md:flex-row" style={{ maxHeight: "75vh" }}>
+        <div className="flex flex-col md:flex-row" style={{ maxHeight: "85vh" }}>
 
           <div className="flex-1 bg-zinc-900 flex items-center justify-center overflow-hidden relative" style={{ minHeight: 300 }}>
             <div className="relative inline-block p-4">
@@ -333,7 +333,7 @@ case "middle_third": {
             </div>
           </div>
 
-          <div className="w-full md:w-72 flex flex-col overflow-y-auto border-t md:border-t-0 md:border-l border-zinc-100">
+          <div className="w-full md:w-96 flex flex-col overflow-y-auto border-t md:border-t-0 md:border-l border-zinc-100">
 
             <div className="flex border-b border-zinc-100">
               {(["overview", "edit"] as const).map(tab => (
