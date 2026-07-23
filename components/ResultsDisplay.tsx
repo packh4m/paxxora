@@ -436,4 +436,3 @@ export default function ResultsDisplay({ result, onReset, onResultUpdate }: Resu
       )}
     </div>
   );
-}
