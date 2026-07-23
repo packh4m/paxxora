@@ -8,6 +8,7 @@ import MeasurementOverlay from "./MeasurementOverlay";
 import { calculateAllMetrics } from "@/lib/metrics";
 import { getScoreColor, getScoreLabel, calculateOverallScore } from "@/lib/scoring";
 import Link from "next/link";
+import { METRIC_INSIGHTS, getSeverity } from "@/lib/insights";
 
 interface ResultsDisplayProps {
   result: AnalysisResult;
