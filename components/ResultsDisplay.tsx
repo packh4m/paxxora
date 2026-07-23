@@ -93,7 +93,7 @@ function MetricRow({ name, value, score, onClick, onMouseEnter, onMouseLeave }: 
       onClick={onClick}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
-      className="group w-full flex items-center gap-4 py-3 px-4 text-left transition-all hover:bg-zinc-50 border-b border-zinc-100 last:border-0"
+      className="w-full flex items-center gap-4 py-3 px-4 text-left transition-all hover:bg-zinc-50 border-b border-zinc-100 last:border-0"
     >
       <div className="flex-1 min-w-0">
         <p className="text-sm text-zinc-700 truncate">{name}</p>
