@@ -141,6 +141,8 @@ export default function ResultsDisplay({ result, onReset, onResultUpdate }: Resu
   const [selectedMetricIndex, setSelectedMetricIndex] = useState<number | null>(null);
   const [selectedComposite, setSelectedComposite] = useState<CompositeMetricInfo | null>(null);
 
+  const getScore = (id: string) => result.metrics.find(r => r.definition.id === id)?.score ?? 5.0;
+
   const { harmonyScore, harmonyMetrics } = useMemo(() => {
     const harmonyMetrics = HARMONY_CATEGORIES.map(category => ({
       category,
@@ -152,47 +154,38 @@ export default function ResultsDisplay({ result, onReset, onResultUpdate }: Resu
     return { harmonyScore, harmonyMetrics };
   }, [result.metrics]);
 
-  const angularityScore = result.metrics.find(m => m.definition.id === "angularity_score")?.score ?? 5.0;
-  const dimorphismScore = result.metrics.find(m => m.definition.id === "dimorphism_score")?.score ?? 5.0;
-  const finalScore = result.finalScore ?? result.overallScore;
-  const getScore = (id: string) => result.metrics.find(r => r.definition.id === id)?.score ?? 5.0;
-
-  const angularitySubScores: Record<string, number> = {
+  const angularitySubScores = useMemo(() => ({
     "Jaw Definition": (getScore("jaw_frontal_angle") * 0.5) + (getScore("jaw_slope") * 0.5),
     "Chin Definition": (getScore("chin_philtrum") * 0.6) + (getScore("lower_third_proportion") * 0.4),
     "Cheekbone Prominence": (getScore("cheekbone_height") * 0.6) + (getScore("face_width_height") * 0.4),
     "Cheek Leanness": (getScore("midface_ratio") * 0.5) + (getScore("bigonial_width") * 0.5),
     "Submental Definition": (getScore("neck_width") * 0.6) + (getScore("jaw_slope") * 0.4),
-  };
+  }), [result.metrics]);
 
-  const dimorphismSubScores: Record<string, number> = {
+  const dimorphismSubScores = useMemo(() => ({
     "Jaw": (getScore("jaw_frontal_angle") * 0.4) + (getScore("bigonial_width") * 0.3) + (getScore("jaw_slope") * 0.3),
     "Eyes": (getScore("canthal_tilt") * 0.5) + (getScore("eye_aspect_ratio") * 0.5),
     "Face Shape": (getScore("face_width_height") * 0.5) + (getScore("total_face_width_height") * 0.5),
     "Nose": (getScore("intercanthal_nasal") * 0.6) + (getScore("middle_third") * 0.4),
     "Brow Ridge": (getScore("eyebrow_tilt") * 0.6) + (getScore("brow_length_ratio") * 0.4),
     "Lips": (getScore("chin_philtrum") * 0.5) + (getScore("lower_third_proportion") * 0.5),
-  };
+  }), [result.metrics]);
 
-  const handleMetricClick = (metricId: string) => {
-    const index = result.metrics.findIndex(m => m.definition.id === metricId);
-    if (index !== -1 && result.metrics[index].value !== null) setSelectedMetricIndex(index);
-  };
+  const angularityScore = useMemo(() => {
+    const scores = Object.values(angularitySubScores);
+    return scores.reduce((a, b) => a + b, 0) / scores.length;
+  }, [angularitySubScores]);
 
-  const handleAngularityClick = (name: string, score: number) => {
-    const info = ANGULARITY_INFO[name];
-    if (info) setSelectedComposite({ name, score, ...info });
-  };
+  const dimorphismScore = useMemo(() => {
+    const geoScores = Object.values(dimorphismSubScores);
+    const visionScores = result.visionScores
+      ? ALL_DIMORPHISM_VISION_KEYS.map(k => result.visionScores![k] as number).filter(v => v !== undefined)
+      : [];
+    const all = [...geoScores, ...visionScores];
+    return all.reduce((a, b) => a + b, 0) / all.length;
+  }, [dimorphismSubScores, result.visionScores]);
 
-  const handleDimorphismGeoClick = (name: string, score: number) => {
-    const info = DIMORPHISM_GEO_INFO[name];
-    if (info) setSelectedComposite({ name, score, ...info });
-  };
-
-  const handleDimorphismVisionClick = (key: keyof typeof VISION_METRIC_LABELS, score: number) => {
-    const info = DIMORPHISM_VISION_INFO[key as string];
-    if (info) setSelectedComposite({ name: VISION_METRIC_LABELS[key], score, ...info });
-  };
+  const finalScore = result.finalScore ?? result.overallScore;
 
   const tabs: { id: Tab; label: string; score: number }[] = [
     { id: "harmony", label: "Harmony", score: harmonyScore },
@@ -225,6 +218,26 @@ export default function ResultsDisplay({ result, onReset, onResultUpdate }: Resu
       .filter(key => result.visionScores![key] !== undefined)
       .sort((a, b) => (result.visionScores![a] as number) - (result.visionScores![b] as number));
   }, [result.visionScores]);
+
+  const handleMetricClick = (metricId: string) => {
+    const index = result.metrics.findIndex(m => m.definition.id === metricId);
+    if (index !== -1 && result.metrics[index].value !== null) setSelectedMetricIndex(index);
+  };
+
+  const handleAngularityClick = (name: string, score: number) => {
+    const info = ANGULARITY_INFO[name];
+    if (info) setSelectedComposite({ name, score, ...info });
+  };
+
+  const handleDimorphismGeoClick = (name: string, score: number) => {
+    const info = DIMORPHISM_GEO_INFO[name];
+    if (info) setSelectedComposite({ name, score, ...info });
+  };
+
+  const handleDimorphismVisionClick = (key: keyof typeof VISION_METRIC_LABELS, score: number) => {
+    const info = DIMORPHISM_VISION_INFO[key as string];
+    if (info) setSelectedComposite({ name: VISION_METRIC_LABELS[key], score, ...info });
+  };
 
   return (
     <div className="flex flex-col bg-[#f7f7f5]" style={{ height: "100vh", overflow: "hidden" }}>
