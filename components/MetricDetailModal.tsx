@@ -39,7 +39,7 @@ const METRIC_LANDMARKS: Record<string, number[]> = {
   lower_third_proportion: [35, 42, 7],
   mouth_nose_ratio: [38, 39, 4, 5],
   jaw_frontal_angle: [45, 46, 47, 48],
-  alar_angle: [4, 5, 35],
+  alar_angle: [16, 27, 35],
   neck_width: [49, 50, 51, 52],
   bitemporal_width: [10, 11, 51, 52],
   intercanthal_nasal: [12, 23, 4, 5],
