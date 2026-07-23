@@ -30,7 +30,7 @@ const METRIC_LANDMARKS: Record<string, number[]> = {
   canthal_tilt: [12, 13, 23, 24],
   midface_ratio: [2, 3, 40],
   cupids_bow_depth: [40, 41],
-  top_third: [1, 18, 29],
+  top_third: [1, 7, 17, 18, 28, 29],
   face_width_height: [51, 52, 34, 7],
   total_face_width_height: [51, 52, 1, 7],
   eye_separation: [2, 3, 51, 52],
