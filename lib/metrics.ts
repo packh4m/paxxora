@@ -194,22 +194,12 @@ export function calculateAllMetrics(faceLandmarks: FaceLandmarks): MetricResult[
         // Projected onto trichion→menton axis for accuracy regardless of head tilt
         // Glabella proxy = midpoint of L[18] (Left Brow Inner) and L[29] (Right Brow Inner)
         case "top_third": {
-          // Upper third: Trichion (1) to Glabella as % of total face
-          const trichion = L[1];
-          const glabella = midpoint(L[18], L[29]);
-          const menton = L[7];
-
-          const axis = { x: menton.x - trichion.x, y: menton.y - trichion.y };
-          const total = Math.hypot(axis.x, axis.y);
-          const unit = { x: axis.x / total, y: axis.y / total };
-
-          const proj = (p: Point) =>
-            (p.x - trichion.x) * unit.x + (p.y - trichion.y) * unit.y;
-
-          const glabellaAt = proj(glabella);
-          value = (glabellaAt / total) * 100;
-          break;
-        }
+  const browMidY = (L[17].y + L[18].y + L[28].y + L[29].y) / 4;
+  const totalHeight = distance(L[1], L[7]);
+  const topThirdHeight = Math.abs(browMidY - L[1].y);
+  value = (topThirdHeight / totalHeight) * 100;
+  break;
+}
 
         case "middle_third": {
           // Middle third: Glabella to Subnasale (35) as % of total face
