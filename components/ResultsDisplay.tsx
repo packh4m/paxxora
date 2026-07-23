@@ -312,19 +312,14 @@ export default function ResultsDisplay({ result, onReset, onResultUpdate }: Resu
       </div>
 
       <div className="flex flex-1 overflow-hidden max-w-7xl mx-auto w-full p-4 gap-4">
-        <div className="w-80 flex-shrink-0 flex flex-col overflow-hidden rounded-2xl bg-white border border-zinc-200 shadow-sm">
-          <div className="flex-shrink-0 px-4 py-3 border-b border-zinc-100 flex items-center justify-between">
-            <div>
+          <div className="w-80 flex-shrink-0 flex flex-col overflow-hidden rounded-2xl bg-white border border-zinc-200 shadow-sm">
+            <div className="flex-shrink-0 px-4 py-3 border-b border-zinc-100">
               <p className="text-xs text-zinc-400 mb-0.5">{tabs.find(t => t.id === activeTab)?.label} score</p>
               <p className="text-xl font-semibold" style={{ color: getScoreColor(activeScore) }}>
                 {activeScore.toFixed(2)}<span className="text-xs text-zinc-400 font-normal ml-1">/10</span>
               </p>
             </div>
-          </div>
-          <div className="flex-1 relative overflow-hidden rounded-b-2xl">
-            {showLandmarks && result.landmarks && result.imageWidth && result.imageHeight ? (
-              <LandmarkOverlay imageUrl={result.imageUrl} landmarks={result.landmarks} imageWidth={result.imageWidth} imageHeight={result.imageHeight} />
-            ) : (
+            <div className="flex-1 relative overflow-hidden rounded-b-2xl">
               <div className="relative w-full h-full">
                 <img src={result.imageUrl} alt="Analyzed photo" className="w-full h-full object-cover" />
                 {hoveredMetricId && result.landmarks && result.imageWidth && result.imageHeight && (() => {
@@ -339,10 +334,8 @@ export default function ResultsDisplay({ result, onReset, onResultUpdate }: Resu
                   ) : null;
                 })()}
               </div>
-            )}
+            </div>
           </div>
-        </div>
-
         <div className="flex-1 flex flex-col overflow-hidden rounded-2xl bg-white border border-zinc-200 shadow-sm">
           <div className="flex-shrink-0 px-6 py-3 border-b border-zinc-100 flex items-center justify-between">
             <p className="text-sm font-semibold text-black">Your {tabs.find(t => t.id === activeTab)?.label} ratios</p>
