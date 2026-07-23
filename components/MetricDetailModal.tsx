@@ -314,20 +314,19 @@ case "middle_third": {
 
         <div className="flex flex-col md:flex-row" style={{ maxHeight: "85vh" }}>
 
-          <div className="flex-1 bg-zinc-900 flex items-center justify-center overflow-hidden relative" style={{ minHeight: 300 }}>
-            <div className="relative inline-block p-4">
+          <div className="flex-1 bg-zinc-900 overflow-hidden relative" style={{ minHeight: 300 }}>
+  <div className="relative w-full h-full">
               <img
-                src={imageUrl}
-                alt="Face analysis"
-                className="max-w-full object-contain"
-                style={{ maxHeight: "65vh", opacity: 0.9, display: "block" }}
-              />
+  src={imageUrl}
+  alt="Face analysis"
+  className="w-full h-full object-cover"
+  style={{ opacity: 0.9, display: "block" }}
+/>
               <svg
-                className="absolute top-4 left-4 pointer-events-none"
-                style={{ width: "calc(100% - 32px)", height: "calc(100% - 32px)" }}
-                viewBox={`0 0 ${imageWidth} ${imageHeight}`}
-                preserveAspectRatio="none"
-              >
+  className="absolute top-0 left-0 w-full h-full pointer-events-none"
+  viewBox={`0 0 ${imageWidth} ${imageHeight}`}
+  preserveAspectRatio="xMidYMid slice"
+>
                 {renderMeasurementLines()}
               </svg>
             </div>
