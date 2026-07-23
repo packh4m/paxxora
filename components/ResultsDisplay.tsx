@@ -15,7 +15,6 @@ interface ResultsDisplayProps {
 }
 
 const HARMONY_CATEGORIES: MetricCategory[] = ["Facial Thirds", "Eyes", "Nose", "Jaw", "Lips", "Brows", "Features"];
-const FEATURES_CATEGORIES: MetricCategory[] = ["Nose", "Jaw", "Lips", "Brows", "Features"];
 
 type Tab = "harmony" | "angularity" | "dimorphism";
 
@@ -142,22 +141,15 @@ export default function ResultsDisplay({ result, onReset, onResultUpdate }: Resu
   const [selectedMetricIndex, setSelectedMetricIndex] = useState<number | null>(null);
   const [selectedComposite, setSelectedComposite] = useState<CompositeMetricInfo | null>(null);
 
-  const { harmonyScore, featuresScore, harmonyMetrics, featuresMetrics } = useMemo(() => {
+  const { harmonyScore, harmonyMetrics } = useMemo(() => {
     const harmonyMetrics = HARMONY_CATEGORIES.map(category => ({
-      category,
-      metrics: result.metrics.filter(m => m.definition.category === category),
-    }));
-    const featuresMetrics = FEATURES_CATEGORIES.map(category => ({
       category,
       metrics: result.metrics.filter(m => m.definition.category === category),
     }));
     const harmonyScores = harmonyMetrics.flatMap(c => c.metrics).filter(m => m.score !== null).map(m => m.score as number);
     const harmonyIds = harmonyMetrics.flatMap(c => c.metrics).map(m => m.definition.id);
     const harmonyScore = calculateOverallScore(harmonyScores, harmonyIds);
-    const featuresScores = featuresMetrics.flatMap(c => c.metrics).filter(m => m.score !== null).map(m => m.score as number);
-    const featuresIds = featuresMetrics.flatMap(c => c.metrics).map(m => m.definition.id);
-    const featuresScore = calculateOverallScore(featuresScores, featuresIds);
-    return { harmonyScore, featuresScore, harmonyMetrics, featuresMetrics };
+    return { harmonyScore, harmonyMetrics };
   }, [result.metrics]);
 
   const angularityScore = result.metrics.find(m => m.definition.id === "angularity_score")?.score ?? 5.0;
@@ -206,7 +198,6 @@ export default function ResultsDisplay({ result, onReset, onResultUpdate }: Resu
     { id: "harmony", label: "Harmony", score: harmonyScore },
     { id: "angularity", label: "Angularity", score: angularityScore },
     { id: "dimorphism", label: "Dimorphism", score: dimorphismScore },
-    { id: "features", label: "Features", score: featuresScore },
   ];
 
   const activeScore = tabs.find(t => t.id === activeTab)?.score ?? 0;
@@ -216,13 +207,6 @@ export default function ResultsDisplay({ result, onReset, onResultUpdate }: Resu
       .filter(m => m.score !== null)
       .sort((a, b) => (a.score ?? 0) - (b.score ?? 0)),
     [harmonyMetrics]
-  );
-
-  const sortedFeaturesMetrics = useMemo(() =>
-    featuresMetrics.flatMap(({ metrics }) => metrics)
-      .filter(m => m.score !== null)
-      .sort((a, b) => (a.score ?? 0) - (b.score ?? 0)),
-    [featuresMetrics]
   );
 
   const sortedAngularityEntries = useMemo(() =>
@@ -321,7 +305,6 @@ export default function ResultsDisplay({ result, onReset, onResultUpdate }: Resu
             <p className="text-sm font-semibold text-black">Your {tabs.find(t => t.id === activeTab)?.label} ratios</p>
             <p className="text-xs text-zinc-400">
               {activeTab === "harmony" ? sortedHarmonyMetrics.length :
-               activeTab === "features" ? sortedFeaturesMetrics.length :
                activeTab === "angularity" ? sortedAngularityEntries.length :
                sortedDimorphismGeoEntries.length + sortedDimorphismVisionKeys.length} metrics
             </p>
@@ -329,12 +312,6 @@ export default function ResultsDisplay({ result, onReset, onResultUpdate }: Resu
 
           <div className="flex-1 overflow-y-auto">
             {activeTab === "harmony" && sortedHarmonyMetrics.map(metric => (
-              <MetricRow key={metric.definition.id} name={metric.definition.name}
-                value={metric.value !== null ? String(metric.value.toFixed(2)) : undefined}
-                score={metric.score!} onClick={() => handleMetricClick(metric.definition.id)} />
-            ))}
-
-            {activeTab === "features" && sortedFeaturesMetrics.map(metric => (
               <MetricRow key={metric.definition.id} name={metric.definition.name}
                 value={metric.value !== null ? String(metric.value.toFixed(2)) : undefined}
                 score={metric.score!} onClick={() => handleMetricClick(metric.definition.id)} />
@@ -377,39 +354,39 @@ export default function ResultsDisplay({ result, onReset, onResultUpdate }: Resu
       </div>
 
       {selectedMetricIndex !== null && result.landmarks && result.imageWidth && result.imageHeight && (
-  <MetricDetailModal
-    metric={result.metrics[selectedMetricIndex]}
-    metrics={result.metrics}
-    currentIndex={selectedMetricIndex}
-    imageUrl={result.imageUrl}
-    landmarks={result.landmarks}
-    imageWidth={result.imageWidth}
-    imageHeight={result.imageHeight}
-    onClose={() => setSelectedMetricIndex(null)}
-    onNavigate={(index) => setSelectedMetricIndex(index)}
-    onLandmarksUpdate={(updatedLandmarks) => {
-  const newMetrics = calculateAllMetrics({
-    landmarks: updatedLandmarks,
-    imageWidth: result.imageWidth!,
-    imageHeight: result.imageHeight!,
-  });
-  const scores = newMetrics.map(m => m.score);
-  const metricIds = newMetrics.map(m => m.definition.id);
-  const newOverallScore = calculateOverallScore(scores, metricIds);
-  onResultUpdate?.({
-    ...result,
-    metrics: newMetrics,
-    overallScore: newOverallScore,
-    landmarks: updatedLandmarks,
-    finalScore: result.visionScores
-      ? (newOverallScore * 0.5) + ((result.finalScore ?? result.overallScore) - result.overallScore * 0.5)
-      : newOverallScore,
-  });
-}}
-  />
+        <MetricDetailModal
+          metric={result.metrics[selectedMetricIndex]}
+          metrics={result.metrics}
+          currentIndex={selectedMetricIndex}
+          imageUrl={result.imageUrl}
+          landmarks={result.landmarks}
+          imageWidth={result.imageWidth}
+          imageHeight={result.imageHeight}
+          onClose={() => setSelectedMetricIndex(null)}
+          onNavigate={(index) => setSelectedMetricIndex(index)}
+          onLandmarksUpdate={(updatedLandmarks) => {
+            const newMetrics = calculateAllMetrics({
+              landmarks: updatedLandmarks,
+              imageWidth: result.imageWidth!,
+              imageHeight: result.imageHeight!,
+            });
+            const scores = newMetrics.map(m => m.score);
+            const metricIds = newMetrics.map(m => m.definition.id);
+            const newOverallScore = calculateOverallScore(scores, metricIds);
+            onResultUpdate?.({
+              ...result,
+              metrics: newMetrics,
+              overallScore: newOverallScore,
+              landmarks: updatedLandmarks,
+              finalScore: result.visionScores
+                ? (newOverallScore * 0.5) + ((result.finalScore ?? result.overallScore) - result.overallScore * 0.5)
+                : newOverallScore,
+            });
+          }}
+        />
       )}
 
-{selectedComposite && (
+      {selectedComposite && (
         <CompositeMetricModal metric={selectedComposite} onClose={() => setSelectedComposite(null)} />
       )}
     </div>
