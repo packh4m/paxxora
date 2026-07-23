@@ -153,8 +153,14 @@ case "top_third": {
       case "brow_eye_distance": line(L(18), L(2)); line(L(29), L(3), true); dot(L(18)); dot(L(2)); dot(L(29)); dot(L(3)); label(valueStr, mid(L(18), L(2)), 16); break;
       case "total_face_width_height": line(L(51), L(52)); line(L(1), L(7)); dot(L(51)); dot(L(52)); dot(L(1)); dot(L(7)); label(valueStr, mid(L(51), L(52)), -14); break;
       case "eye_separation": line(L(2), L(3)); line(L(51), L(52), true); dot(L(2)); dot(L(3)); dot(L(51)); dot(L(52)); label(valueStr, mid(L(2), L(3)), -14); break;
-      case "middle_third": { const g = mid(L(18), L(29)); line(g, L(35)); dot(g); dot(L(35)); label(valueStr, mid(g, L(35)), 16); break; }
-      case "bigonial_width": line(L(43), L(44)); line(L(51), L(52), true); dot(L(43)); dot(L(44)); dot(L(51)); dot(L(52)); label(valueStr, mid(L(43), L(44)), 16); break;
+case "middle_third": {
+  const browMidY = (L(17).y + L(18).y + L(28).y + L(29).y) / 4;
+  const browMidX = (L(17).x + L(18).x + L(28).x + L(29).x) / 4;
+  line({ x: browMidX, y: browMidY }, L(35));
+  dot(L(17)); dot(L(18)); dot(L(28)); dot(L(29)); dot(L(35));
+  label(valueStr, { x: browMidX, y: (browMidY + L(35).y) / 2 }, 0);
+  break;
+}      case "bigonial_width": line(L(43), L(44)); line(L(51), L(52), true); dot(L(43)); dot(L(44)); dot(L(51)); dot(L(52)); label(valueStr, mid(L(43), L(44)), 16); break;
       case "lower_third_proportion": line(L(35), L(42)); line(L(42), L(7), true); dot(L(35)); dot(L(42)); dot(L(7)); label(valueStr, mid(L(35), L(42)), 16); break;
       case "mouth_nose_ratio": line(L(38), L(39)); line(L(4), L(5), true); dot(L(38)); dot(L(39)); dot(L(4)); dot(L(5)); label(valueStr, mid(L(38), L(39)), 16); break;
       case "jaw_frontal_angle": line(L(45), L(47)); line(L(46), L(48)); dot(L(45)); dot(L(46)); dot(L(47)); dot(L(48)); label(valueStr, mid(L(45), L(47)), 16); break;
