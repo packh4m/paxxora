@@ -5,7 +5,7 @@ import { AnalysisResult, MetricCategory, VISION_METRIC_LABELS } from "@/lib/type
 import LandmarkOverlay from "./LandmarkOverlay";
 import MetricDetailModal from "./MetricDetailModal";
 import { calculateAllMetrics } from "@/lib/metrics";
-import { getScoreColor, getScoreLabel, calculateOverallScore } from "@/lib/scoring";
+import { getScoreColor, getScoreLabel, calculateOverallScore, getPercentile } from "@/lib/scoring";
 import Link from "next/link";
 
 interface ResultsDisplayProps {
