@@ -32,7 +32,7 @@ export default function LandmarkEditor({
   onBack,
 }: LandmarkEditorProps) {
   const [points, setPoints] = useState<Point[]>([...landmarks]);
-  const [zoomIndex, setZoomIndex] = useState(0);
+  const [zoomIndex, setZoomIndex] = useState(2);
   const [baseSize, setBaseSize] = useState<{ width: number; height: number } | null>(null);
   const [currentEditIndex, setCurrentEditIndex] = useState(initialEditingIndex);
   const canvasRef = useRef<HTMLCanvasElement>(null);
