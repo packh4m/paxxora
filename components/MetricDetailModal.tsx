@@ -2,7 +2,7 @@
 
 import { useEffect, useCallback, useState } from "react";
 import { MetricResult, Point } from "@/lib/types";
-import { getScoreColor, getScoreLabel } from "@/lib/scoring";
+import { getScoreColor, getScoreLabel, getPercentile } from "@/lib/scoring";
 import LandmarkEditor from "./LandmarkEditor";
 
 interface MetricDetailModalProps {
@@ -355,6 +355,11 @@ case "middle_third": {
                     <span className="text-sm text-zinc-400 mb-1">/10</span>
                   </div>
                   <p className="text-xs text-zinc-400">{getScoreLabel(metric.score ?? 0)}</p>
+{metric.score !== null && (
+  <p className="text-xs font-medium text-zinc-600 mt-1.5 bg-zinc-100 px-2 py-1 rounded-md inline-block">
+    Better than {getPercentile(metric.score)}% of males
+  </p>
+)}
                   <div className="mt-3">
                     <div className="relative h-2 rounded-full overflow-hidden" style={{
                       background: "linear-gradient(to right, #ef4444, #f97316, #eab308, #22c55e, #22c55e, #eab308, #f97316, #ef4444)"
