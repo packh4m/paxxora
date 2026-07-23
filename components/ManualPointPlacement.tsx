@@ -30,7 +30,7 @@ export default function ManualPointPlacement({
     new Array(LANDMARK_POINTS.length).fill(null)
   );
   const [hoveredPoint, setHoveredPoint] = useState<{ x: number; y: number } | null>(null);
-  const [zoomIndex, setZoomIndex] = useState(0);
+  const [zoomIndex, setZoomIndex] = useState(2);
   const [baseSize, setBaseSize] = useState<{ width: number; height: number } | null>(null);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
