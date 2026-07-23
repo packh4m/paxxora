@@ -273,7 +273,7 @@ export default function ResultsDisplay({ result, onReset, onResultUpdate }: Resu
           </Link>
           <div className="flex items-center gap-1">
             {tabs.map(tab => (
-              <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+              <button key={tab.id} onClick={() => { setActiveTab(tab.id); setInnerTab("metrics"); }}
                 className={`px-4 py-1.5 text-sm font-medium rounded-full transition-all border ${
                   activeTab === tab.id ? "bg-black text-white border-black" : "text-zinc-500 border-transparent hover:text-black"
                 }`}>
@@ -299,7 +299,7 @@ export default function ResultsDisplay({ result, onReset, onResultUpdate }: Resu
           <div className="w-px h-10 bg-zinc-200 flex-shrink-0" />
           <div className="flex items-center gap-6">
             {tabs.map(tab => (
-              <button key={tab.id} onClick={() => setActiveTab(tab.id)} className="text-left">
+              <button key={tab.id} onClick={() => { setActiveTab(tab.id); setInnerTab("metrics"); }} className="text-left">
                 <p className={`text-xs mb-0.5 transition-colors ${activeTab === tab.id ? "text-black font-medium" : "text-zinc-400"}`}>
                   {tab.label}
                 </p>
