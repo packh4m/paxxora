@@ -14,10 +14,10 @@ interface ResultsDisplayProps {
   onResultUpdate?: (updated: AnalysisResult) => void;
 }
 
-const HARMONY_CATEGORIES: MetricCategory[] = ["Facial Thirds", "Eyes"];
+const HARMONY_CATEGORIES: MetricCategory[] = ["Facial Thirds", "Eyes", "Nose", "Jaw", "Lips", "Brows", "Features"];
 const FEATURES_CATEGORIES: MetricCategory[] = ["Nose", "Jaw", "Lips", "Brows", "Features"];
 
-type Tab = "harmony" | "features" | "angularity" | "dimorphism";
+type Tab = "harmony" | "angularity" | "dimorphism";
 
 interface CompositeMetricInfo {
   name: string;
