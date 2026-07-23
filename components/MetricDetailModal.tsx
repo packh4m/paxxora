@@ -23,6 +23,7 @@ const LINE_COLOR_SECONDARY = "rgba(0,206,209,0.5)";
 const LINE_WIDTH = 2;
 
 const METRIC_LANDMARKS: Record<string, number[]> = {
+  midface_ratio: [2, 3, 40],
   nose_bridge_width: [36, 37, 4, 5],
   lower_third: [35, 7],
   lip_ratio: [40, 6, 38, 42, 39],  
