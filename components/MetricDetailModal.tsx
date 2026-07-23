@@ -25,7 +25,7 @@ const LINE_WIDTH = 2;
 const METRIC_LANDMARKS: Record<string, number[]> = {
   nose_bridge_width: [36, 37, 4, 5],
   lower_third: [35, 7],
-  lip_ratio: [40, 42, 6],
+  lip_ratio: [40, 6, 38, 42, 39],  
   chin_philtrum: [35, 42, 7],
   canthal_tilt: [12, 13, 23, 24],
   midface_ratio: [2, 3, 40],
