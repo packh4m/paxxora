@@ -462,7 +462,9 @@ export default function ResultsDisplay({ result, onReset, onResultUpdate }: Resu
       </>
     )}
   </div>
-</div>
+        </div>
+      </div>
+      {selectedMetricIndex !== null && result.landmarks && result.imageWidth && result.imageHeight && (
 
       {selectedMetricIndex !== null && result.landmarks && result.imageWidth && result.imageHeight && (
         <MetricDetailModal
