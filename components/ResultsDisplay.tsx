@@ -207,17 +207,22 @@ export default function ResultsDisplay({ result, onReset, onResultUpdate }: Resu
     [angularitySubScores]
   );
 
-  const sortedDimorphismGeoEntries = useMemo(() =>
-    Object.entries(dimorphismSubScores).sort((a, b) => a[1] - b[1]),
-    [dimorphismSubScores]
-  );
-
-  const sortedDimorphismVisionKeys = useMemo(() => {
-    if (!result.visionScores) return [];
-    return [...ALL_DIMORPHISM_VISION_KEYS]
-      .filter(key => result.visionScores![key] !== undefined)
-      .sort((a, b) => (result.visionScores![a] as number) - (result.visionScores![b] as number));
-  }, [result.visionScores]);
+  const sortedDimorphismItems = useMemo(() => {
+    const geoItems = Object.entries(dimorphismSubScores).map(([name, score]) => ({
+      name, score, type: "geo" as const,
+    }));
+    const visionItems = result.visionScores
+      ? ALL_DIMORPHISM_VISION_KEYS
+          .filter(key => result.visionScores![key] !== undefined)
+          .map(key => ({
+            name: VISION_METRIC_LABELS[key],
+            score: result.visionScores![key] as number,
+            type: "vision" as const,
+            key,
+          }))
+      : [];
+    return [...geoItems, ...visionItems].sort((a, b) => a.score - b.score);
+  }, [dimorphismSubScores, result.visionScores]);
 
   const handleMetricClick = (metricId: string) => {
     const index = result.metrics.findIndex(m => m.definition.id === metricId);
@@ -319,7 +324,7 @@ export default function ResultsDisplay({ result, onReset, onResultUpdate }: Resu
             <p className="text-xs text-zinc-400">
               {activeTab === "harmony" ? sortedHarmonyMetrics.length :
                activeTab === "angularity" ? sortedAngularityEntries.length :
-               sortedDimorphismGeoEntries.length + sortedDimorphismVisionKeys.length} metrics
+               sortedDimorphismItems.length} metrics
             </p>
           </div>
 
@@ -336,16 +341,16 @@ export default function ResultsDisplay({ result, onReset, onResultUpdate }: Resu
 
             {activeTab === "dimorphism" && (
               <>
-                {sortedDimorphismGeoEntries.map(([name, score]) => (
-                  <MetricRow key={name} name={name} score={score} onClick={() => handleDimorphismGeoClick(name, score)} />
-                ))}
-                {result.visionScores ? (
-                  sortedDimorphismVisionKeys.map(key => (
-                    <MetricRow key={key} name={VISION_METRIC_LABELS[key]}
-                      score={result.visionScores![key] as number}
-                      onClick={() => handleDimorphismVisionClick(key, result.visionScores![key] as number)} />
-                  ))
-                ) : !result.visionError && (
+                {sortedDimorphismItems.map(item =>
+                  item.type === "geo" ? (
+                    <MetricRow key={item.name} name={item.name} score={item.score}
+                      onClick={() => handleDimorphismGeoClick(item.name, item.score)} />
+                  ) : (
+                    <MetricRow key={item.name} name={item.name} score={item.score}
+                      onClick={() => handleDimorphismVisionClick((item as any).key, item.score)} />
+                  )
+                )}
+                {!result.visionScores && !result.visionError && (
                   <div className="flex items-center gap-3 p-6">
                     <svg className="w-5 h-5 text-zinc-400 animate-spin" fill="none" viewBox="0 0 24 24">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
