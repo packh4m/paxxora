@@ -348,10 +348,13 @@ export default function ResultsDisplay({ result, onReset, onResultUpdate }: Resu
 
           <div className="flex-1 overflow-y-auto">
             {activeTab === "harmony" && sortedHarmonyMetrics.map(metric => (
-              <MetricRow key={metric.definition.id} name={metric.definition.name}
-                value={metric.value !== null ? String(metric.value.toFixed(2)) : undefined}
-                score={metric.score!} onClick={() => handleMetricClick(metric.definition.id)} />
-            ))}
+  <MetricRow key={metric.definition.id} name={metric.definition.name}
+    value={metric.value !== null ? String(metric.value.toFixed(2)) : undefined}
+    score={metric.score!}
+    onClick={() => handleMetricClick(metric.definition.id)}
+    onMouseEnter={() => setHoveredMetricId(metric.definition.id)}
+    onMouseLeave={() => setHoveredMetricId(null)} />
+))}
 
             {activeTab === "angularity" && sortedAngularityEntries.map(([name, score]) => (
               <MetricRow key={name} name={name} score={score} onClick={() => handleAngularityClick(name, score)} />
