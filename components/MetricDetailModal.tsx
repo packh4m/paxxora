@@ -393,6 +393,38 @@ case "middle_third": {
                     {metric.definition.category}
                   </span>
                 </div>
+                {(() => {
+  const insights = METRIC_INSIGHTS[metric.definition.id];
+  if (!insights || metric.score === null) return null;
+  const matching = insights.filter(i => i.condition(metric.score!));
+  if (matching.length === 0) return null;
+  return (
+    <div className="px-5 py-4 border-t border-zinc-100">
+      <p className="text-xs font-mono uppercase tracking-widest text-zinc-400 mb-3">May Indicate</p>
+      <div className="space-y-2">
+        {matching.map((insight, i) => (
+          <div key={i} className={`p-3 rounded-xl border ${
+            insight.type === "positive"
+              ? "bg-green-50 border-green-100"
+              : "bg-red-50 border-red-100"
+          }`}>
+            <div className="flex items-center justify-between mb-1">
+              <p className={`text-xs font-semibold ${
+                insight.type === "positive" ? "text-green-700" : "text-red-700"
+              }`}>{insight.label}</p>
+              <span className={`text-xs font-medium px-1.5 py-0.5 rounded ${
+                insight.type === "positive"
+                  ? "bg-green-100 text-green-700"
+                  : "bg-red-100 text-red-700"
+              }`}>{insight.impact}</span>
+            </div>
+            <p className="text-xs text-zinc-600 leading-relaxed">{insight.description}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+})()}
               </>
             )}
 
