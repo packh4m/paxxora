@@ -498,7 +498,7 @@ export function calculateAllMetrics(faceLandmarks: FaceLandmarks): MetricResult[
   }
   break;
 }
-        }
+        
 
         // ============ BROWS ============
         case "eyebrow_tilt": {
