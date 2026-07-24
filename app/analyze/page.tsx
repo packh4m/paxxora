@@ -5,6 +5,7 @@ import PhotoUpload from "@/components/PhotoUpload";
 import ResultsDisplay from "@/components/ResultsDisplay";
 import DebugOverlay from "@/components/DebugOverlay";
 import ManualPointPlacement from "@/components/ManualPointPlacement";
+import OverviewDisplay from "@/components/OverviewDisplay";
 import { AnalysisResult, Point, VisionScores } from "@/lib/types";
 import { calculateAllMetrics } from "@/lib/metrics";
 import { calculateOverallScore } from "@/lib/scoring";
@@ -14,7 +15,6 @@ async function imageUrlToBase64(url: string): Promise<{ base64: string; mediaTyp
   const response = await fetch(url);
   const blob = await response.blob();
   const mediaType = "image/jpeg";
-
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.onload = () => {
@@ -22,7 +22,6 @@ async function imageUrlToBase64(url: string): Promise<{ base64: string; mediaTyp
       const maxSize = 1024;
       let width = img.width;
       let height = img.height;
-
       if (width > maxSize || height > maxSize) {
         if (width > height) {
           height = Math.round((height * maxSize) / width);
@@ -32,7 +31,6 @@ async function imageUrlToBase64(url: string): Promise<{ base64: string; mediaTyp
           height = maxSize;
         }
       }
-
       canvas.width = width;
       canvas.height = height;
       const ctx = canvas.getContext("2d");
@@ -68,9 +66,11 @@ async function getVisionScore(imageUrl: string): Promise<{ visionScores?: Vision
 }
 
 type AppState = "upload" | "debug" | "results" | "error" | "manual";
+type ActiveView = "overview" | "analysis";
 
 export default function Home() {
   const [state, setState] = useState<AppState>("upload");
+  const [activeView, setActiveView] = useState<ActiveView>("overview");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -125,6 +125,7 @@ export default function Home() {
       finalScore: undefined,
     };
     setResult(analysisResult);
+    setActiveView("overview");
     setState("results");
     getVisionScore(manualImageData.url).then(({ visionScores, visionError }) => {
       setResult((prev) => {
@@ -162,6 +163,7 @@ export default function Home() {
 
   const handleReset = useCallback(() => {
     setState("upload");
+    setActiveView("overview");
     setImageFile(null);
     setPreviewUrl(null);
     setResult(null);
@@ -194,7 +196,23 @@ export default function Home() {
   }
 
   if (state === "results" && result) {
-    return <ResultsDisplay result={result} onReset={handleReset} onResultUpdate={(updated) => setResult(updated)} />;
+    if (activeView === "overview") {
+      return (
+        <OverviewDisplay
+          result={result}
+          onReset={handleReset}
+          onGoToAnalysis={() => setActiveView("analysis")}
+        />
+      );
+    }
+    return (
+      <ResultsDisplay
+        result={result}
+        onReset={handleReset}
+        onResultUpdate={(updated) => setResult(updated)}
+        onGoToOverview={() => setActiveView("overview")}
+      />
+    );
   }
 
   return (
