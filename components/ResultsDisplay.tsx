@@ -315,6 +315,9 @@ export default function ResultsDisplay({ result, onReset, onResultUpdate, onGoTo
             <span className="text-lg font-semibold text-black tracking-tight">Paxxora</span>
           </Link>
           <div className="flex items-center gap-1">
+            <button onClick={onGoToOverview} className="px-4 py-1.5 text-sm font-medium rounded-full text-zinc-500 border-transparent hover:text-black transition-colors mr-1">
+              Overview
+            </button>
             {tabs.map(tab => (
               <button key={tab.id} onClick={() => setActiveTab(tab.id)}
                 className={`px-4 py-1.5 text-sm font-medium rounded-full transition-all border ${
