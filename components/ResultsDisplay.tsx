@@ -2,7 +2,6 @@
 
 import { useState, useMemo } from "react";
 import { AnalysisResult, MetricCategory, VISION_METRIC_LABELS } from "@/lib/types";
-import LandmarkOverlay from "./LandmarkOverlay";
 import MetricDetailModal from "./MetricDetailModal";
 import MeasurementOverlay from "./MeasurementOverlay";
 import { calculateAllMetrics } from "@/lib/metrics";
@@ -19,7 +18,6 @@ interface ResultsDisplayProps {
 const HARMONY_CATEGORIES: MetricCategory[] = ["Facial Thirds", "Eyes", "Nose", "Jaw", "Lips", "Brows", "Features"];
 
 type Tab = "harmony" | "angularity" | "dimorphism";
-type InnerTab = "metrics" | "improvements";
 
 interface CompositeMetricInfo {
   name: string;
@@ -156,7 +154,6 @@ function CompositeMetricModal({ metric, onClose }: { metric: CompositeMetricInfo
 
 export default function ResultsDisplay({ result, onReset, onResultUpdate }: ResultsDisplayProps) {
   const [activeTab, setActiveTab] = useState<Tab>("harmony");
-  const [innerTab, setInnerTab] = useState<InnerTab>("metrics");
   const [selectedMetricIndex, setSelectedMetricIndex] = useState<number | null>(null);
   const [selectedComposite, setSelectedComposite] = useState<CompositeMetricInfo | null>(null);
   const [hoveredMetricId, setHoveredMetricId] = useState<string | null>(null);
@@ -308,7 +305,7 @@ export default function ResultsDisplay({ result, onReset, onResultUpdate }: Resu
           </Link>
           <div className="flex items-center gap-1">
             {tabs.map(tab => (
-              <button key={tab.id} onClick={() => { setActiveTab(tab.id); setInnerTab("metrics"); }}
+              <button key={tab.id} onClick={() => setActiveTab(tab.id)}
                 className={`px-4 py-1.5 text-sm font-medium rounded-full transition-all border ${
                   activeTab === tab.id ? "bg-black text-white border-black" : "text-zinc-500 border-transparent hover:text-black"
                 }`}>
@@ -334,7 +331,7 @@ export default function ResultsDisplay({ result, onReset, onResultUpdate }: Resu
           <div className="w-px h-10 bg-zinc-200 flex-shrink-0" />
           <div className="flex items-center gap-6">
             {tabs.map(tab => (
-              <button key={tab.id} onClick={() => { setActiveTab(tab.id); setInnerTab("metrics"); }} className="text-left">
+              <button key={tab.id} onClick={() => setActiveTab(tab.id)} className="text-left">
                 <p className={`text-xs mb-0.5 transition-colors ${activeTab === tab.id ? "text-black font-medium" : "text-zinc-400"}`}>
                   {tab.label}
                 </p>
@@ -375,16 +372,7 @@ export default function ResultsDisplay({ result, onReset, onResultUpdate }: Resu
 
         <div className="flex-1 flex flex-col overflow-hidden rounded-2xl bg-white border border-zinc-200 shadow-sm">
           <div className="flex-shrink-0 px-6 py-3 border-b border-zinc-100 flex items-center justify-between">
-            <div className="flex gap-1">
-              {(["metrics", "improvements"] as const).map(t => (
-                <button key={t} onClick={() => setInnerTab(t)}
-                  className={`px-3 py-1.5 text-xs font-medium rounded-full transition-all border ${
-                    innerTab === t ? "bg-black text-white border-black" : "text-zinc-500 border-transparent hover:text-black"
-                  }`}>
-                  {t === "metrics" ? "Metrics" : "Areas of Improvement"}
-                </button>
-              ))}
-            </div>
+            <p className="text-sm font-semibold text-black">Your {tabs.find(t => t.id === activeTab)?.label} ratios</p>
             <p className="text-xs text-zinc-400">
               {activeTab === "harmony" ? sortedHarmonyMetrics.length :
                activeTab === "angularity" ? sortedAngularityEntries.length :
@@ -393,19 +381,54 @@ export default function ResultsDisplay({ result, onReset, onResultUpdate }: Resu
           </div>
 
           <div className="flex-1 overflow-y-auto">
-            {innerTab === "improvements" ? (() => {
-              const items = getImprovements();
-              if (items.length === 0) {
-                return (
-                  <div className="flex flex-col items-center justify-center h-full p-8 text-center">
-                    <p className="text-2xl mb-2">✓</p>
-                    <p className="text-sm font-medium text-zinc-700">No significant issues</p>
-                    <p className="text-xs text-zinc-400 mt-1">All metrics in this category are within acceptable ranges.</p>
+            {activeTab === "harmony" && sortedHarmonyMetrics.map(metric => (
+              <MetricRow
+                key={metric.definition.id}
+                name={metric.definition.name}
+                value={metric.value !== null ? String(metric.value.toFixed(2)) : undefined}
+                score={metric.score!}
+                onClick={() => handleMetricClick(metric.definition.id)}
+                onMouseEnter={() => setHoveredMetricId(metric.definition.id)}
+                onMouseLeave={() => setHoveredMetricId(null)}
+              />
+            ))}
+
+            {activeTab === "angularity" && sortedAngularityEntries.map(([name, score]) => (
+              <MetricRow key={name} name={name} score={score} onClick={() => handleAngularityClick(name, score)} />
+            ))}
+
+            {activeTab === "dimorphism" && (
+              <>
+                {sortedDimorphismItems.map(item =>
+                  item.type === "geo" ? (
+                    <MetricRow key={item.name} name={item.name} score={item.score}
+                      onClick={() => handleDimorphismGeoClick(item.name, item.score)} />
+                  ) : (
+                    <MetricRow key={item.name} name={item.name} score={item.score}
+                      onClick={() => handleDimorphismVisionClick((item as any).key, item.score)} />
+                  )
+                )}
+                {!result.visionScores && !result.visionError && (
+                  <div className="flex items-center gap-3 p-6">
+                    <svg className="w-5 h-5 text-zinc-400 animate-spin" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
+                    </svg>
+                    <p className="text-sm text-zinc-500">Loading AI vision scores...</p>
                   </div>
-                );
-              }
+                )}
+              </>
+            )}
+
+            {/* Areas of Improvement */}
+            {(() => {
+              const items = getImprovements();
+              if (items.length === 0) return null;
               return (
-                <div>
+                <div className="border-t-4 border-zinc-100">
+                  <div className="px-6 py-3 bg-zinc-50 border-b border-zinc-100">
+                    <p className="text-xs font-mono uppercase tracking-widest text-zinc-400">Areas of Improvement</p>
+                  </div>
                   {items.map((item, i) => {
                     const sev = getSeverity(item.impact);
                     return (
@@ -423,46 +446,7 @@ export default function ResultsDisplay({ result, onReset, onResultUpdate }: Resu
                   })}
                 </div>
               );
-            })() : (
-              <>
-                {activeTab === "harmony" && sortedHarmonyMetrics.map(metric => (
-                  <MetricRow
-                    key={metric.definition.id}
-                    name={metric.definition.name}
-                    value={metric.value !== null ? String(metric.value.toFixed(2)) : undefined}
-                    score={metric.score!}
-                    onClick={() => handleMetricClick(metric.definition.id)}
-                    onMouseEnter={() => setHoveredMetricId(metric.definition.id)}
-                    onMouseLeave={() => setHoveredMetricId(null)}
-                  />
-                ))}
-                {activeTab === "angularity" && sortedAngularityEntries.map(([name, score]) => (
-                  <MetricRow key={name} name={name} score={score} onClick={() => handleAngularityClick(name, score)} />
-                ))}
-                {activeTab === "dimorphism" && (
-                  <>
-                    {sortedDimorphismItems.map(item =>
-                      item.type === "geo" ? (
-                        <MetricRow key={item.name} name={item.name} score={item.score}
-                          onClick={() => handleDimorphismGeoClick(item.name, item.score)} />
-                      ) : (
-                        <MetricRow key={item.name} name={item.name} score={item.score}
-                          onClick={() => handleDimorphismVisionClick((item as any).key, item.score)} />
-                      )
-                    )}
-                    {!result.visionScores && !result.visionError && (
-                      <div className="flex items-center gap-3 p-6">
-                        <svg className="w-5 h-5 text-zinc-400 animate-spin" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
-                        </svg>
-                        <p className="text-sm text-zinc-500">Loading AI vision scores...</p>
-                      </div>
-                    )}
-                  </>
-                )}
-              </>
-            )}
+            })()}
           </div>
         </div>
       </div>
