@@ -157,6 +157,8 @@ export default function ResultsDisplay({ result, onReset, onResultUpdate }: Resu
   const [selectedMetricIndex, setSelectedMetricIndex] = useState<number | null>(null);
   const [selectedComposite, setSelectedComposite] = useState<CompositeMetricInfo | null>(null);
   const [hoveredMetricId, setHoveredMetricId] = useState<string | null>(null);
+  const [hoveredCompositeName, setHoveredCompositeName] = useState<string | null>(null);
+  const [hoveredCompositeScore, setHoveredCompositeScore] = useState<number | null>(null);
 
   const getScore = (id: string) => result.metrics.find(r => r.definition.id === id)?.score ?? 5.0;
 
@@ -295,6 +297,14 @@ export default function ResultsDisplay({ result, onReset, onResultUpdate }: Resu
     return items.sort((a, b) => Math.abs(parseFloat(b.impact)) - Math.abs(parseFloat(a.impact)));
   };
 
+  // Determine what to show in the hover overlay
+  const hoveredName = hoveredMetricId
+    ? result.metrics.find(m => m.definition.id === hoveredMetricId)?.definition.name ?? null
+    : hoveredCompositeName;
+  const hoveredScore = hoveredMetricId
+    ? result.metrics.find(m => m.definition.id === hoveredMetricId)?.score ?? null
+    : hoveredCompositeScore;
+
   return (
     <div className="flex flex-col bg-[#f7f7f5]" style={{ height: "100vh", overflow: "hidden" }}>
       <header className="flex-shrink-0 bg-white border-b border-zinc-200 z-10">
@@ -366,6 +376,18 @@ export default function ResultsDisplay({ result, onReset, onResultUpdate }: Resu
                   />
                 ) : null;
               })()}
+              {(hoveredName && hoveredScore !== null) && (
+                <div className="absolute bottom-0 left-0 right-0 px-4 py-3 bg-gradient-to-t from-black/80 to-transparent">
+                  <p className="text-white text-sm font-medium leading-tight">{hoveredName}</p>
+                  <div className="flex items-baseline gap-1 mt-0.5">
+                    <span className="text-lg font-semibold" style={{ color: getScoreColor(hoveredScore) }}>
+                      {hoveredScore.toFixed(1)}
+                    </span>
+                    <span className="text-xs text-white/60">/10</span>
+                    <span className="text-xs text-white/60 ml-1">{getScoreLabel(hoveredScore)}</span>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -388,24 +410,43 @@ export default function ResultsDisplay({ result, onReset, onResultUpdate }: Resu
                 value={metric.value !== null ? String(metric.value.toFixed(2)) : undefined}
                 score={metric.score!}
                 onClick={() => handleMetricClick(metric.definition.id)}
-                onMouseEnter={() => setHoveredMetricId(metric.definition.id)}
-                onMouseLeave={() => setHoveredMetricId(null)}
+                onMouseEnter={() => { setHoveredMetricId(metric.definition.id); setHoveredCompositeName(null); }}
+                onMouseLeave={() => { setHoveredMetricId(null); }}
               />
             ))}
 
             {activeTab === "angularity" && sortedAngularityEntries.map(([name, score]) => (
-              <MetricRow key={name} name={name} score={score} onClick={() => handleAngularityClick(name, score)} />
+              <MetricRow
+                key={name}
+                name={name}
+                score={score}
+                onClick={() => handleAngularityClick(name, score)}
+                onMouseEnter={() => { setHoveredCompositeName(name); setHoveredCompositeScore(score); setHoveredMetricId(null); }}
+                onMouseLeave={() => { setHoveredCompositeName(null); setHoveredCompositeScore(null); }}
+              />
             ))}
 
             {activeTab === "dimorphism" && (
               <>
                 {sortedDimorphismItems.map(item =>
                   item.type === "geo" ? (
-                    <MetricRow key={item.name} name={item.name} score={item.score}
-                      onClick={() => handleDimorphismGeoClick(item.name, item.score)} />
+                    <MetricRow
+                      key={item.name}
+                      name={item.name}
+                      score={item.score}
+                      onClick={() => handleDimorphismGeoClick(item.name, item.score)}
+                      onMouseEnter={() => { setHoveredCompositeName(item.name); setHoveredCompositeScore(item.score); setHoveredMetricId(null); }}
+                      onMouseLeave={() => { setHoveredCompositeName(null); setHoveredCompositeScore(null); }}
+                    />
                   ) : (
-                    <MetricRow key={item.name} name={item.name} score={item.score}
-                      onClick={() => handleDimorphismVisionClick((item as any).key, item.score)} />
+                    <MetricRow
+                      key={item.name}
+                      name={item.name}
+                      score={item.score}
+                      onClick={() => handleDimorphismVisionClick((item as any).key, item.score)}
+                      onMouseEnter={() => { setHoveredCompositeName(item.name); setHoveredCompositeScore(item.score); setHoveredMetricId(null); }}
+                      onMouseLeave={() => { setHoveredCompositeName(null); setHoveredCompositeScore(null); }}
+                    />
                   )
                 )}
                 {!result.visionScores && !result.visionError && (
