@@ -13,6 +13,7 @@ interface ResultsDisplayProps {
   result: AnalysisResult;
   onReset: () => void;
   onResultUpdate?: (updated: AnalysisResult) => void;
+  onGoToOverview?: () => void;
 }
 
 const HARMONY_CATEGORIES: MetricCategory[] = ["Facial Thirds", "Eyes", "Nose", "Jaw", "Lips", "Brows", "Features"];
@@ -152,7 +153,7 @@ function CompositeMetricModal({ metric, onClose }: { metric: CompositeMetricInfo
   );
 }
 
-export default function ResultsDisplay({ result, onReset, onResultUpdate }: ResultsDisplayProps) {
+export default function ResultsDisplay({ result, onReset, onResultUpdate, onGoToOverview }: ResultsDisplayProps) {
   const [activeTab, setActiveTab] = useState<Tab>("harmony");
   const [selectedMetricIndex, setSelectedMetricIndex] = useState<number | null>(null);
   const [selectedComposite, setSelectedComposite] = useState<CompositeMetricInfo | null>(null);
