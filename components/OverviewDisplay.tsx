@@ -71,7 +71,6 @@ function ScoreContext({ metrics, pillar, score }: {
   const worst = sorted[sorted.length - 1];
   const label = getScoreLabel(score);
   const sentence = `Your ${pillar.toLowerCase()} score of ${score.toFixed(1)} is ${label.toLowerCase()}. It is driven by strong ${best.name} (${best.score.toFixed(1)}/10)${sorted.length > 1 ? `, but held back by your ${worst.name} (${worst.score.toFixed(1)}/10)` : ""}.`;
-
   return (
     <div>
       <p className="text-xs text-zinc-600 leading-relaxed mb-4">{sentence}</p>
@@ -88,6 +87,84 @@ function ScoreContext({ metrics, pillar, score }: {
           </div>
         ))}
       </div>
+    </div>
+  );
+}
+
+function getStrengthTag(score: number) {
+  if (score >= 9) return { label: "Ideal", bg: "bg-green-50", color: "text-green-700", border: "border-green-200" };
+  if (score >= 7.5) return { label: "Excellent", bg: "bg-teal-50", color: "text-teal-700", border: "border-teal-200" };
+  if (score >= 6) return { label: "Good", bg: "bg-blue-50", color: "text-blue-700", border: "border-blue-200" };
+  return { label: "Average", bg: "bg-zinc-50", color: "text-zinc-500", border: "border-zinc-200" };
+}
+
+function StrengthsList({ items }: { items: { name: string; score: number }[] }) {
+  const [showAll, setShowAll] = useState(false);
+  const visible = showAll ? items : items.slice(0, 3);
+  const hidden = items.length - 3;
+  return (
+    <div>
+      <div className="divide-y divide-zinc-100">
+        {visible.map(m => {
+          const tag = getStrengthTag(m.score);
+          return (
+            <div key={m.name} className="flex items-center gap-4 py-3.5">
+              <span className={`text-xs font-semibold px-2.5 py-1 rounded border flex-shrink-0 w-20 text-center ${tag.bg} ${tag.color} ${tag.border}`}>
+                {tag.label}
+              </span>
+              <p className="flex-1 text-sm text-zinc-800">{m.name}</p>
+              <span className="text-sm font-semibold flex-shrink-0" style={{ color: getScoreColor(m.score) }}>
+                {m.score.toFixed(1)}
+              </span>
+              <svg className="w-4 h-4 text-zinc-300 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
+          );
+        })}
+      </div>
+      {!showAll && hidden > 0 && (
+        <button onClick={() => setShowAll(true)}
+          className="mt-2 w-full py-3 text-sm text-zinc-500 hover:text-black bg-zinc-50 hover:bg-zinc-100 rounded-xl transition-colors">
+          Show {hidden} more ↓
+        </button>
+      )}
+    </div>
+  );
+}
+
+function ImprovementsList({ items }: { items: { label: string; description: string; impact: string; score: number; name: string }[] }) {
+  const [showAll, setShowAll] = useState(false);
+  const visible = showAll ? items : items.slice(0, 3);
+  const hidden = items.length - 3;
+  if (items.length === 0) {
+    return <p className="text-sm text-zinc-400 text-center py-4">No significant issues in this category.</p>;
+  }
+  return (
+    <div>
+      <div className="divide-y divide-zinc-100">
+        {visible.map((item, i) => {
+          const sev = getSeverity(item.impact);
+          return (
+            <div key={i} className="flex items-center gap-4 py-3.5">
+              <span className={`text-xs font-semibold px-2.5 py-1 rounded border flex-shrink-0 w-20 text-center ${sev.bg} ${sev.color} ${sev.border}`}>
+                {sev.label}
+              </span>
+              <p className="flex-1 text-sm text-zinc-800">{item.label}</p>
+              <span className="text-sm font-semibold text-red-500 flex-shrink-0">{item.impact}</span>
+              <svg className="w-4 h-4 text-zinc-300 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
+          );
+        })}
+      </div>
+      {!showAll && hidden > 0 && (
+        <button onClick={() => setShowAll(true)}
+          className="mt-2 w-full py-3 text-sm text-zinc-500 hover:text-black bg-zinc-50 hover:bg-zinc-100 rounded-xl transition-colors">
+          Show {hidden} more ↓
+        </button>
+      )}
     </div>
   );
 }
@@ -159,33 +236,29 @@ export default function OverviewDisplay({ result, onReset, onGoToAnalysis }: Ove
   const active = pillarData[activeTab];
   const activePercentile = getPercentile(active.score);
 
-  const pillars = [
-    { label: "Overall" as PillarTab, score: finalScore },
-    { label: "Harmony" as PillarTab, score: harmonyScore },
-    { label: "Angularity" as PillarTab, score: angularityScore },
-    { label: "Dimorphism" as PillarTab, score: dimorphismScore },
+  const pillars: { label: PillarTab; score: number }[] = [
+    { label: "Overall", score: finalScore },
+    { label: "Harmony", score: harmonyScore },
+    { label: "Angularity", score: angularityScore },
+    { label: "Dimorphism", score: dimorphismScore },
   ];
 
   const sectionTabs: SectionTab[] = ["Harmony", "Angularity", "Dimorphism"];
 
-  const getStrengths = (tab: SectionTab) => {
-    const items = pillarData[tab].metrics;
-    return [...items].sort((a, b) => b.score - a.score).slice(0, 5);
-  };
+  const getStrengths = (tab: SectionTab) =>
+    [...pillarData[tab].metrics].sort((a, b) => b.score - a.score);
 
   const getImprovements = (tab: SectionTab) => {
     const items = pillarData[tab].metrics;
-    const result_: { label: string; description: string; impact: string; score: number; name: string }[] = [];
-
+    const out: { label: string; description: string; impact: string; score: number; name: string }[] = [];
     items.forEach(item => {
-      const insights = METRIC_INSIGHTS[item.name] ?? METRIC_INSIGHTS[item.name];
+      const insights = METRIC_INSIGHTS[item.name];
       if (!insights) return;
       insights.filter(i => i.type === "negative" && i.condition(item.score)).forEach(i => {
-        result_.push({ label: i.label, description: i.description, impact: i.impact, score: item.score, name: item.name });
+        out.push({ label: i.label, description: i.description, impact: i.impact, score: item.score, name: item.name });
       });
     });
-
-    return result_.sort((a, b) => Math.abs(parseFloat(b.impact)) - Math.abs(parseFloat(a.impact))).slice(0, 5);
+    return out.sort((a, b) => Math.abs(parseFloat(b.impact)) - Math.abs(parseFloat(a.impact)));
   };
 
   return (
@@ -213,16 +286,13 @@ export default function OverviewDisplay({ result, onReset, onGoToAnalysis }: Ove
       <div className="flex-1 overflow-y-auto">
         <div className="max-w-7xl mx-auto px-6 py-6 space-y-4">
 
-          {/* Pillar score cards */}
+          {/* Pillar cards */}
           <div className="grid grid-cols-4 gap-4">
             {pillars.map(p => (
-              <button
-                key={p.label}
-                onClick={() => setActiveTab(p.label)}
+              <button key={p.label} onClick={() => setActiveTab(p.label)}
                 className={`rounded-2xl border p-5 text-left transition-all ${
                   activeTab === p.label ? "bg-black border-black" : "bg-white border-zinc-200 hover:border-zinc-400"
-                }`}
-              >
+                }`}>
                 <p className="text-xs font-mono uppercase tracking-widest text-zinc-400 mb-3">{p.label}</p>
                 <p className="text-3xl font-semibold mb-1" style={{ color: activeTab === p.label ? "#fff" : getScoreColor(p.score) }}>
                   {p.score.toFixed(2)}
@@ -251,13 +321,10 @@ export default function OverviewDisplay({ result, onReset, onGoToAnalysis }: Ove
               </div>
               <div className="flex gap-1 bg-zinc-100 rounded-full p-1">
                 {pillars.map(p => (
-                  <button
-                    key={p.label}
-                    onClick={() => setActiveTab(p.label)}
+                  <button key={p.label} onClick={() => setActiveTab(p.label)}
                     className={`px-3 py-1 text-xs font-medium rounded-full transition-all ${
                       activeTab === p.label ? "bg-white text-black shadow-sm" : "text-zinc-500 hover:text-black"
-                    }`}
-                  >
+                    }`}>
                     {p.label}
                   </button>
                 ))}
@@ -265,7 +332,6 @@ export default function OverviewDisplay({ result, onReset, onGoToAnalysis }: Ove
             </div>
 
             <div className="grid grid-cols-3 gap-0">
-              {/* Photo */}
               <div className="relative overflow-hidden border-r border-zinc-100" style={{ height: 400 }}>
                 <img src={result.imageUrl} alt="Your photo" className="w-full h-full object-cover" />
                 <div className="absolute bottom-0 left-0 right-0 px-4 py-3 bg-gradient-to-t from-black/70 to-transparent">
@@ -279,7 +345,6 @@ export default function OverviewDisplay({ result, onReset, onGoToAnalysis }: Ove
                 </div>
               </div>
 
-              {/* Bold stat */}
               <div className="p-6 border-r border-zinc-100 flex flex-col justify-center gap-4">
                 <BoldStat score={active.score} percentile={activePercentile} />
                 <div className="space-y-2">
@@ -296,7 +361,6 @@ export default function OverviewDisplay({ result, onReset, onGoToAnalysis }: Ove
                 </div>
               </div>
 
-              {/* Understanding + Score Context */}
               <div className="p-6 overflow-y-auto" style={{ maxHeight: 400 }}>
                 <div className="mb-5">
                   <p className="text-xs font-mono uppercase tracking-widest text-zinc-400 mb-2">
@@ -318,74 +382,38 @@ export default function OverviewDisplay({ result, onReset, onGoToAnalysis }: Ove
 
           {/* Key Strengths */}
           <div className="bg-white rounded-2xl border border-zinc-200 p-6">
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center justify-between mb-5">
               <p className="text-sm font-semibold text-black">Key strengths</p>
-              <div className="flex gap-1 bg-zinc-100 rounded-full p-1">
+              <div className="flex gap-1">
                 {sectionTabs.map(t => (
                   <button key={t} onClick={() => setStrengthsTab(t)}
-                    className={`px-3 py-1 text-xs font-medium rounded-full transition-all ${
-                      strengthsTab === t ? "bg-white text-black shadow-sm" : "text-zinc-500 hover:text-black"
+                    className={`px-3 py-1.5 text-xs font-medium rounded-full transition-all ${
+                      strengthsTab === t ? "bg-black text-white" : "text-zinc-500 hover:text-black"
                     }`}>
                     {t}
                   </button>
                 ))}
               </div>
             </div>
-            <div className="grid grid-cols-5 gap-4">
-              {getStrengths(strengthsTab).map(m => (
-                <div key={m.name} className="bg-zinc-50 rounded-xl p-3">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-semibold" style={{ color: getScoreColor(m.score) }}>
-                      {m.score.toFixed(1)}
-                    </span>
-                    <span className="text-xs text-zinc-400">/10</span>
-                  </div>
-                  <p className="text-xs text-zinc-700 font-medium leading-tight mb-2">{m.name}</p>
-                  <ScoreBar score={m.score} />
-                </div>
-              ))}
-            </div>
+            <StrengthsList items={getStrengths(strengthsTab)} />
           </div>
 
           {/* Areas of Improvement */}
           <div className="bg-white rounded-2xl border border-zinc-200 p-6">
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center justify-between mb-5">
               <p className="text-sm font-semibold text-black">Areas of improvement</p>
-              <div className="flex gap-1 bg-zinc-100 rounded-full p-1">
+              <div className="flex gap-1">
                 {sectionTabs.map(t => (
                   <button key={t} onClick={() => setImprovementsTab(t)}
-                    className={`px-3 py-1 text-xs font-medium rounded-full transition-all ${
-                      improvementsTab === t ? "bg-white text-black shadow-sm" : "text-zinc-500 hover:text-black"
+                    className={`px-3 py-1.5 text-xs font-medium rounded-full transition-all ${
+                      improvementsTab === t ? "bg-black text-white" : "text-zinc-500 hover:text-black"
                     }`}>
                     {t}
                   </button>
                 ))}
               </div>
             </div>
-            <div className="space-y-2">
-              {getImprovements(improvementsTab).length === 0 ? (
-                <p className="text-sm text-zinc-400 text-center py-4">No significant issues in this category.</p>
-              ) : getImprovements(improvementsTab).map((item, i) => {
-                const sev = getSeverity(item.impact);
-                return (
-                  <div key={i} className="flex items-start gap-4 p-3 rounded-xl bg-zinc-50 border border-zinc-100">
-                    <span className={`text-xs font-semibold px-2 py-1 rounded flex-shrink-0 ${sev.bg} ${sev.color} border ${sev.border}`}>
-                      {sev.label}
-                    </span>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-0.5">
-                        <p className="text-sm font-medium text-zinc-800">{item.label}</p>
-                        <span className="text-xs font-medium flex-shrink-0" style={{ color: getScoreColor(item.score) }}>
-                          {item.score.toFixed(1)}/10
-                        </span>
-                      </div>
-                      <p className="text-xs text-zinc-500 leading-relaxed">{item.description}</p>
-                    </div>
-                    <span className="text-sm font-semibold text-red-500 flex-shrink-0">{item.impact}</span>
-                  </div>
-                );
-              })}
-            </div>
+            <ImprovementsList items={getImprovements(improvementsTab)} />
           </div>
 
         </div>
