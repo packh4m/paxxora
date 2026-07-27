@@ -29,6 +29,7 @@ const PILLAR_DESCRIPTIONS: Record<string, string> = {
 
 type PillarTab = "Overall" | "Harmony" | "Angularity" | "Dimorphism";
 type SectionTab = "Harmony" | "Angularity" | "Dimorphism";
+type MetricItem = { name: string; score: number; id?: string };
 
 function ScoreBar({ score }: { score: number }) {
   const pct = (score / 10) * 100;
@@ -60,11 +61,7 @@ function BoldStat({ score, percentile }: { score: number; percentile: number }) 
   );
 }
 
-function ScoreContext({ metrics, pillar, score }: {
-  metrics: { name: string; score: number }[];
-  pillar: string;
-  score: number;
-}) {
+function ScoreContext({ metrics, pillar, score }: { metrics: MetricItem[]; pillar: string; score: number }) {
   if (metrics.length === 0) return null;
   const sorted = [...metrics].sort((a, b) => b.score - a.score);
   const best = sorted[0];
@@ -92,16 +89,18 @@ function ScoreContext({ metrics, pillar, score }: {
 }
 
 function getStrengthTag(score: number) {
-  if (score >= 9) return { label: "Ideal", bg: "bg-green-50", color: "text-green-700", border: "border-green-200" };
-  if (score >= 7.5) return { label: "Excellent", bg: "bg-teal-50", color: "text-teal-700", border: "border-teal-200" };
-  if (score >= 6) return { label: "Good", bg: "bg-blue-50", color: "text-blue-700", border: "border-blue-200" };
-  return { label: "Average", bg: "bg-zinc-50", color: "text-zinc-500", border: "border-zinc-200" };
+  if (score >= 9.5) return { label: "Ideal", bg: "bg-green-50", color: "text-green-700", border: "border-green-200" };
+  if (score >= 8.5) return { label: "Excellent", bg: "bg-teal-50", color: "text-teal-700", border: "border-teal-200" };
+  return { label: "Good", bg: "bg-blue-50", color: "text-blue-700", border: "border-blue-200" };
 }
 
-function StrengthsList({ items }: { items: { name: string; score: number }[] }) {
+function StrengthsList({ items }: { items: MetricItem[] }) {
   const [showAll, setShowAll] = useState(false);
   const visible = showAll ? items : items.slice(0, 3);
   const hidden = items.length - 3;
+  if (items.length === 0) {
+    return <p className="text-sm text-zinc-400 text-center py-4">No metrics scoring 8.5 or above in this category.</p>;
+  }
   return (
     <div>
       <div className="divide-y divide-zinc-100">
@@ -187,7 +186,7 @@ export default function OverviewDisplay({ result, onReset, onGoToAnalysis }: Ove
     return calculateOverallScore(scores, ids);
   }, [harmonyMetrics]);
 
-  const angularityItems = useMemo(() => ([
+  const angularityItems: MetricItem[] = useMemo(() => ([
     { name: "Jaw Definition", score: (getScore("jaw_frontal_angle") * 0.5) + (getScore("jaw_slope") * 0.5) },
     { name: "Chin Definition", score: (getScore("chin_philtrum") * 0.6) + (getScore("lower_third_proportion") * 0.4) },
     { name: "Cheekbone Prominence", score: (getScore("cheekbone_height") * 0.6) + (getScore("face_width_height") * 0.4) },
@@ -200,7 +199,7 @@ export default function OverviewDisplay({ result, onReset, onGoToAnalysis }: Ove
     return s.reduce((a, b) => a + b, 0) / s.length;
   }, [angularityItems]);
 
-  const dimorphismGeoItems = useMemo(() => ([
+  const dimorphismGeoItems: MetricItem[] = useMemo(() => ([
     { name: "Jaw", score: (getScore("jaw_frontal_angle") * 0.4) + (getScore("bigonial_width") * 0.3) + (getScore("jaw_slope") * 0.3) },
     { name: "Eyes", score: (getScore("canthal_tilt") * 0.5) + (getScore("eye_aspect_ratio") * 0.5) },
     { name: "Face Shape", score: (getScore("face_width_height") * 0.5) + (getScore("total_face_width_height") * 0.5) },
@@ -209,11 +208,11 @@ export default function OverviewDisplay({ result, onReset, onGoToAnalysis }: Ove
     { name: "Lips", score: (getScore("chin_philtrum") * 0.5) + (getScore("lower_third_proportion") * 0.5) },
   ]), [result.metrics]);
 
-  const dimorphismVisionItems = useMemo(() => {
+  const dimorphismVisionItems: MetricItem[] = useMemo(() => {
     if (!result.visionScores) return [];
     return ALL_DIMORPHISM_VISION_KEYS
       .filter(key => result.visionScores![key] !== undefined)
-      .map(key => ({ name: VISION_METRIC_LABELS[key], score: result.visionScores![key] as number }));
+      .map(key => ({ name: VISION_METRIC_LABELS[key], score: result.visionScores![key] as number, id: key as string }));
   }, [result.visionScores]);
 
   const dimorphismScore = useMemo(() => {
@@ -223,12 +222,15 @@ export default function OverviewDisplay({ result, onReset, onGoToAnalysis }: Ove
 
   const finalScore = result.finalScore ?? result.overallScore;
 
-  const pillarData = {
+  const pillarData: Record<PillarTab, { score: number; metrics: MetricItem[] }> = {
     Overall: {
       score: finalScore,
-      metrics: [...result.metrics].filter(m => m.score !== null).map(m => ({ name: m.definition.name, score: m.score! })),
+      metrics: [...result.metrics].filter(m => m.score !== null).map(m => ({ name: m.definition.name, score: m.score!, id: m.definition.id })),
     },
-    Harmony: { score: harmonyScore, metrics: harmonyMetrics.map(m => ({ name: m.definition.name, score: m.score! })) },
+    Harmony: {
+      score: harmonyScore,
+      metrics: harmonyMetrics.map(m => ({ name: m.definition.name, score: m.score!, id: m.definition.id })),
+    },
     Angularity: { score: angularityScore, metrics: angularityItems },
     Dimorphism: { score: dimorphismScore, metrics: [...dimorphismGeoItems, ...dimorphismVisionItems] },
   };
@@ -246,13 +248,16 @@ export default function OverviewDisplay({ result, onReset, onGoToAnalysis }: Ove
   const sectionTabs: SectionTab[] = ["Harmony", "Angularity", "Dimorphism"];
 
   const getStrengths = (tab: SectionTab) =>
-    [...pillarData[tab].metrics].sort((a, b) => b.score - a.score);
+    [...pillarData[tab].metrics]
+      .filter(m => m.score >= 8.5)
+      .sort((a, b) => b.score - a.score);
 
   const getImprovements = (tab: SectionTab) => {
     const items = pillarData[tab].metrics;
     const out: { label: string; description: string; impact: string; score: number; name: string }[] = [];
     items.forEach(item => {
-      const insights = METRIC_INSIGHTS[item.name];
+      const lookupKey = item.id ?? item.name;
+      const insights = METRIC_INSIGHTS[lookupKey];
       if (!insights) return;
       insights.filter(i => i.type === "negative" && i.condition(item.score)).forEach(i => {
         out.push({ label: i.label, description: i.description, impact: i.impact, score: item.score, name: item.name });
