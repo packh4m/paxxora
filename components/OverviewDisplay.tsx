@@ -122,10 +122,10 @@ function StrengthsList({ items }: { items: MetricItem[] }) {
           );
         })}
       </div>
-      {!showAll && hidden > 0 && (
-        <button onClick={() => setShowAll(true)}
+      {hidden > 0 && (
+        <button onClick={() => setShowAll(!showAll)}
           className="mt-2 w-full py-3 text-sm text-zinc-500 hover:text-black bg-zinc-50 hover:bg-zinc-100 rounded-xl transition-colors">
-          Show {hidden} more ↓
+          {showAll ? "Show less ↑" : `Show ${hidden} more ↓`}
         </button>
       )}
     </div>
@@ -158,10 +158,10 @@ function ImprovementsList({ items }: { items: { label: string; description: stri
           );
         })}
       </div>
-      {!showAll && hidden > 0 && (
-        <button onClick={() => setShowAll(true)}
+      {hidden > 0 && (
+        <button onClick={() => setShowAll(!showAll)}
           className="mt-2 w-full py-3 text-sm text-zinc-500 hover:text-black bg-zinc-50 hover:bg-zinc-100 rounded-xl transition-colors">
-          Show {hidden} more ↓
+          {showAll ? "Show less ↑" : `Show ${hidden} more ↓`}
         </button>
       )}
     </div>
