@@ -293,26 +293,33 @@ export default function OverviewDisplay({ result, onReset, onGoToAnalysis }: Ove
 
           {/* Pillar cards */}
           <div className="grid grid-cols-4 gap-4">
-            {pillars.map(p => (
-              <button key={p.label} onClick={() => setActiveTab(p.label)}
-                className={`rounded-2xl border p-5 text-left transition-all ${
-                  activeTab === p.label ? "bg-black border-black" : "bg-white border-zinc-200 hover:border-zinc-400"
-                }`}>
-                <p className="text-xs font-mono uppercase tracking-widest text-zinc-400 mb-3">{p.label}</p>
-                <p className="text-3xl font-semibold mb-1" style={{ color: activeTab === p.label ? "#fff" : getScoreColor(p.score) }}>
-                  {p.score.toFixed(2)}
-                </p>
-                <p className="text-xs text-zinc-400">{getScoreLabel(p.score)}</p>
-                <div className="mt-3">
-                  <div className={`relative h-1 rounded-full overflow-hidden ${activeTab === p.label ? "bg-zinc-700" : "bg-zinc-100"}`}>
-                    <div className="absolute inset-y-0 left-0 rounded-full" style={{
-                      width: `${(p.score / 10) * 100}%`,
-                      background: activeTab === p.label ? "#fff" : "linear-gradient(to right, #ef4444, #f97316, #eab308, #22c55e)"
-                    }} />
+            {pillars.map(p => {
+              const percentile = getPercentile(p.score);
+              const top = 100 - percentile;
+              return (
+                <button key={p.label} onClick={() => setActiveTab(p.label)}
+                  className={`rounded-2xl border p-5 text-left transition-all ${
+                    activeTab === p.label ? "bg-black border-black" : "bg-white border-zinc-200 hover:border-zinc-400"
+                  }`}>
+                  <p className="text-xs font-mono uppercase tracking-widest text-zinc-400 mb-3">{p.label}</p>
+                  <p className="text-3xl font-semibold mb-1" style={{ color: activeTab === p.label ? "#fff" : getScoreColor(p.score) }}>
+                    {p.score.toFixed(2)}
+                  </p>
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs text-zinc-400">{getScoreLabel(p.score)}</p>
+                    <p className="text-xs text-zinc-400">Top {top}%</p>
                   </div>
-                </div>
-              </button>
-            ))}
+                  <div className="mt-3">
+                    <div className={`relative h-1 rounded-full overflow-hidden ${activeTab === p.label ? "bg-zinc-700" : "bg-zinc-100"}`}>
+                      <div className="absolute inset-y-0 left-0 rounded-full" style={{
+                        width: `${(p.score / 10) * 100}%`,
+                        background: activeTab === p.label ? "#fff" : "linear-gradient(to right, #ef4444, #f97316, #eab308, #22c55e)"
+                      }} />
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
           </div>
 
           {/* Main panel */}
