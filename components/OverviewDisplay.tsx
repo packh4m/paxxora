@@ -46,15 +46,15 @@ function ScoreBar({ score }: { score: number }) {
 function BoldStat({ score, percentile }: { score: number; percentile: number }) {
   const ratio = (100 / Math.max(1, 100 - percentile)).toFixed(1);
   return (
-    <div className="bg-zinc-900 rounded-xl p-4">
-      <p className="text-xs text-zinc-500 mb-2">Population rank</p>
-      <p className="text-3xl font-semibold leading-none" style={{ color: getScoreColor(score) }}>
+    <div className="bg-zinc-50 rounded-xl p-4 border border-zinc-100">
+      <p className="text-xs font-mono uppercase tracking-widest text-zinc-400 mb-3">Population rank</p>
+      <p className="text-4xl font-semibold leading-none" style={{ color: getScoreColor(score) }}>
         1 in {ratio}
       </p>
-      <p className="text-sm text-zinc-400 mt-1">males score this high</p>
-      <div className="mt-3 pt-3 border-t border-zinc-700">
-        <p className="text-xs text-zinc-500">
-          Score <span className="text-zinc-300 font-medium">{score.toFixed(2)}</span> · {percentile}th percentile
+      <p className="text-sm text-zinc-500 mt-1">males score this high</p>
+      <div className="mt-4 pt-4 border-t border-zinc-200">
+        <p className="text-xs text-zinc-400">
+          Score <span className="font-medium text-zinc-700">{score.toFixed(2)}</span> · {percentile}th percentile
         </p>
       </div>
     </div>
