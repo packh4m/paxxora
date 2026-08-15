@@ -219,13 +219,32 @@ case "middle_third": {
         break;
       }
       case "iaa_jfa_deviation": {
-        line(L(16), L(35)); line(L(27), L(35));
-        dot(L(16)); dot(L(27)); dot(L(35));
-        line(L(45), L(47)); line(L(46), L(48));
-        dot(L(45)); dot(L(46)); dot(L(47)); dot(L(48));
-        label(valueStr, L(35), -14);
-        break;
-      }
+  // IAA lines
+  line(L(16), L(35));
+  line(L(27), L(35));
+  dot(L(16)); dot(L(27)); dot(L(35));
+
+  // JFA lines — find apex intersection
+  const x1 = L(45).x, y1 = L(45).y, x2 = L(47).x, y2 = L(47).y;
+  const x3 = L(46).x, y3 = L(46).y, x4 = L(48).x, y4 = L(48).y;
+  const denom2 = (x1-x2)*(y3-y4) - (y1-y2)*(x3-x4);
+  const t2 = ((x1-x3)*(y3-y4) - (y1-y3)*(x3-x4)) / denom2;
+  const apexX = x1 + t2*(x2-x1);
+  const apexY = y1 + t2*(y2-y1);
+  const apex = { x: apexX, y: apexY };
+
+  line(L(45), apex); line(L(46), apex);
+  dot(L(45)); dot(L(46)); dot(apex, 3);
+
+  // IAA degree label
+  const iaaLabelX = (L(16).x + L(27).x) / 2;
+  label(valueStr, { x: iaaLabelX, y: L(35).y - 20 }, 0);
+
+  // JFA degree label
+  const jfaLabelX = (L(45).x + L(46).x) / 2;
+  label(valueStr, { x: jfaLabelX, y: apex.y - 20 }, 0);
+  break;
+}
       default:
         label(valueStr, { x: imageWidth / 2, y: imageHeight / 2 });
         break;
