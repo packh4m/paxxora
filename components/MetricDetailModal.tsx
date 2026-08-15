@@ -325,11 +325,11 @@ export default function MetricDetailModal({
             <div className="relative w-full h-full flex items-center justify-center p-4">
               <div className="relative inline-block">
                 <img
-                  src={imageUrl}
-                  alt="Face analysis"
-                  className="w-full h-full object-cover"
-                  style={{ maxHeight: "65vh", display: "block" }}
-                />
+  src={imageUrl}
+  alt="Face analysis"
+  className="w-full h-full object-contain"
+  style={{ maxHeight: "65vh", display: "block" }}
+/>
                 <svg
                   className="absolute top-0 left-0 w-full h-full pointer-events-none"
                   viewBox={`0 0 ${imageWidth} ${imageHeight}`}
