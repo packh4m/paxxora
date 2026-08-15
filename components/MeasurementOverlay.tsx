@@ -44,13 +44,22 @@ export default function MeasurementOverlay({ metric, landmarks, imageWidth, imag
   };
 
   const label = (text: string, p: Point, offsetY = -12) => {
+    const textLen = text.length * 6 + 8;
     elements.push(
       <g key={`lb${k++}`}>
-        <rect x={p.x - 20} y={p.y + offsetY - 8} width={40} height={16} fill="rgba(0,0,0,0.7)" rx={4} />
+        <rect x={p.x - textLen / 2} y={p.y + offsetY - 8} width={textLen} height={16} fill="rgba(0,0,0,0.7)" rx={4} />
         <text x={p.x} y={p.y + offsetY} fill="white" fontSize="11" textAnchor="middle"
           dominantBaseline="middle" fontFamily="system-ui, sans-serif" fontWeight="500">{text}</text>
       </g>
     );
+  };
+
+  const angleBetween = (p1: Point, vertex: Point, p2: Point): number => {
+    const v1x = p1.x - vertex.x, v1y = p1.y - vertex.y;
+    const v2x = p2.x - vertex.x, v2y = p2.y - vertex.y;
+    const dot = v1x * v2x + v1y * v2y;
+    const len = Math.hypot(v1x, v1y) * Math.hypot(v2x, v2y);
+    return Math.acos(Math.max(-1, Math.min(1, dot / len))) * (180 / Math.PI);
   };
 
   switch (metricId) {
@@ -71,13 +80,12 @@ export default function MeasurementOverlay({ metric, landmarks, imageWidth, imag
     case "lower_third_proportion": line(L(35), L(42)); line(L(42), L(7), true); dot(L(35)); dot(L(42)); dot(L(7)); label(valueStr, mid(L(35), L(42)), 16); break;
     case "mouth_nose_ratio": line(L(38), L(39)); line(L(4), L(5), true); dot(L(38)); dot(L(39)); dot(L(4)); dot(L(5)); label(valueStr, mid(L(38), L(39)), 16); break;
     case "jaw_frontal_angle": {
-  const chinMid = mid(mid(L(47), L(48)), mid(L(45), L(46)));
-  line(L(45), chinMid);
-  line(L(46), chinMid);
-  dot(L(45)); dot(L(46)); dot(chinMid);
-  label(valueStr, { x: chinMid.x - 40, y: chinMid.y + 16 }, 0);
-  break;
-}
+      const chinMid = mid(mid(L(47), L(48)), mid(L(45), L(46)));
+      line(L(45), chinMid); line(L(46), chinMid);
+      dot(L(45)); dot(L(46)); dot(chinMid);
+      label(valueStr, { x: chinMid.x - 40, y: chinMid.y + 16 }, 0);
+      break;
+    }
     case "alar_angle": line(L(16), L(35)); line(L(27), L(35)); dot(L(16)); dot(L(27)); dot(L(35)); label(valueStr, L(35), 20); break;
     case "neck_width": line(L(49), L(50)); line(L(51), L(52), true); dot(L(49)); dot(L(50)); dot(L(51)); dot(L(52)); label(valueStr, mid(L(49), L(50)), 16); break;
     case "bitemporal_width": line(L(10), L(11)); line(L(51), L(52), true); dot(L(10)); dot(L(11)); dot(L(51)); dot(L(52)); label(valueStr, mid(L(10), L(11)), -14); break;
@@ -124,32 +132,26 @@ export default function MeasurementOverlay({ metric, landmarks, imageWidth, imag
       break;
     }
     case "iaa_jfa_deviation": {
-  // IAA lines
-  line(L(16), L(35));
-  line(L(27), L(35));
-  dot(L(16)); dot(L(27)); dot(L(35));
+      // IAA — lateral canthi to subnasale
+      line(L(16), L(35)); line(L(27), L(35));
+      dot(L(16)); dot(L(27)); dot(L(35));
+      const iaa = angleBetween(L(16), L(35), L(27));
+      label(`${iaa.toFixed(1)}°`, { x: (L(16).x + L(27).x) / 2, y: L(35).y }, -20);
 
-  // JFA lines — find apex intersection
-  const x1 = L(45).x, y1 = L(45).y, x2 = L(47).x, y2 = L(47).y;
-  const x3 = L(46).x, y3 = L(46).y, x4 = L(48).x, y4 = L(48).y;
-  const denom2 = (x1-x2)*(y3-y4) - (y1-y2)*(x3-x4);
-  const t2 = ((x1-x3)*(y3-y4) - (y1-y3)*(x3-x4)) / denom2;
-  const apexX = x1 + t2*(x2-x1);
-  const apexY = y1 + t2*(y2-y1);
-  const apex = { x: apexX, y: apexY };
-
-  line(L(45), apex); line(L(46), apex);
-  dot(L(45)); dot(L(46)); dot(apex, 3);
-
-  // IAA degree label
-  const iaaLabelX = (L(16).x + L(27).x) / 2;
-  label(valueStr, { x: iaaLabelX, y: L(35).y - 20 }, 0);
-
-  // JFA degree label
-  const jfaLabelX = (L(45).x + L(46).x) / 2;
-  label(valueStr, { x: jfaLabelX, y: apex.y - 20 }, 0);
-  break;
-}
+      // JFA — find intersection apex
+      const x1 = L(45).x, y1 = L(45).y, x2 = L(47).x, y2 = L(47).y;
+      const x3 = L(46).x, y3 = L(46).y, x4 = L(48).x, y4 = L(48).y;
+      const denom = (x1-x2)*(y3-y4) - (y1-y2)*(x3-x4);
+      const t = ((x1-x3)*(y3-y4) - (y1-y3)*(x3-x4)) / denom;
+      const apexX = x1 + t*(x2-x1);
+      const apexY = y1 + t*(y2-y1);
+      const apex = { x: apexX, y: apexY };
+      line(L(45), apex); line(L(46), apex);
+      dot(L(45)); dot(L(46)); dot(apex, 3);
+      const jfa = angleBetween(L(45), apex, L(46));
+      label(`${jfa.toFixed(1)}°`, { x: (L(45).x + L(46).x) / 2, y: apex.y }, -20);
+      break;
+    }
     default: break;
   }
 
