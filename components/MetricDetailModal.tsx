@@ -1,4 +1,4 @@
-"use client";
+p"use client";
 
 import { useEffect, useCallback, useState } from "react";
 import { MetricResult, Point } from "@/lib/types";
@@ -27,7 +27,7 @@ const METRIC_LANDMARKS: Record<string, number[]> = {
   midface_ratio: [2, 3, 40],
   nose_bridge_width: [36, 37, 4, 5],
   lower_third: [35, 7],
-  lip_ratio: [40, 6, 38, 42, 39],  
+  lip_ratio: [40, 6, 38, 42, 39],
   chin_philtrum: [35, 42, 7],
   canthal_tilt: [12, 13, 23, 24],
   middle_third: [17, 18, 28, 29, 35, 1, 7],
@@ -40,7 +40,7 @@ const METRIC_LANDMARKS: Record<string, number[]> = {
   lower_third_proportion: [35, 42, 7],
   mouth_nose_ratio: [38, 39, 4, 5],
   jaw_frontal_angle: [45, 46, 47, 48],
-  alar_angle: [16, 27, 35],
+  alar_angle: [13, 24, 35],
   neck_width: [49, 50, 51, 52],
   bitemporal_width: [10, 11, 51, 52],
   intercanthal_nasal: [12, 23, 4, 5],
@@ -52,7 +52,8 @@ const METRIC_LANDMARKS: Record<string, number[]> = {
   jaw_slope: [51, 45, 47, 52, 46, 48],
   iaa_jfa_deviation: [16, 27, 35, 45, 46, 47, 48],
   ear_protrusion_ratio: [8, 9, 51, 52],
-  ear_protrusion_angle: [8, 9, 42, 51, 52],};
+  ear_protrusion_angle: [8, 9, 42, 51, 52],
+};
 
 const LANDMARK_NAMES: Record<number, string> = {
   1: "Hairline", 2: "Left Pupil", 3: "Right Pupil", 4: "Left Nose Side",
@@ -106,6 +107,14 @@ export default function MetricDetailModal({
     y: (p1.y + p2.y) / 2,
   });
 
+  const angleBetween = (p1: Point, vertex: Point, p2: Point): number => {
+    const v1x = p1.x - vertex.x, v1y = p1.y - vertex.y;
+    const v2x = p2.x - vertex.x, v2y = p2.y - vertex.y;
+    const d = v1x * v2x + v1y * v2y;
+    const len = Math.hypot(v1x, v1y) * Math.hypot(v2x, v2y);
+    return Math.acos(Math.max(-1, Math.min(1, d / len))) * (180 / Math.PI);
+  };
+
   const renderMeasurementLines = () => {
     const metricId = metric.definition.id;
     const value = metric.value;
@@ -127,9 +136,10 @@ export default function MetricDetailModal({
     };
 
     const label = (text: string, p: Point, offsetY = -12) => {
+      const textLen = text.length * 6 + 8;
       elements.push(
         <g key={`lb${k++}`}>
-          <rect x={p.x - 20} y={p.y + offsetY - 8} width={40} height={16} fill="rgba(0,0,0,0.7)" rx={4} />
+          <rect x={p.x - textLen / 2} y={p.y + offsetY - 8} width={textLen} height={16} fill="rgba(0,0,0,0.7)" rx={4} />
           <text x={p.x} y={p.y + offsetY} fill="white" fontSize="11" textAnchor="middle"
             dominantBaseline="middle" fontFamily="system-ui, sans-serif" fontWeight="500">{text}</text>
         </g>
@@ -137,43 +147,22 @@ export default function MetricDetailModal({
     };
 
     switch (metricId) {
-      case "mouth_corner_position": line(L(38), { x: L(38).x, y: L(42).y }); line(L(39), { x: L(39).x, y: L(42).y }, true); dot(L(38)); dot(L(39)); dot(L(42)); label(valueStr, mid(L(38), L(39)), 16); break;
       case "nose_bridge_width": line(L(36), L(37)); line(L(4), L(5)); dot(L(36)); dot(L(37)); dot(L(4)); dot(L(5)); label(valueStr, mid(L(36), L(37))); break;
       case "lower_third": line(L(35), L(7)); dot(L(35)); dot(L(7)); label(valueStr, mid(L(35), L(7)), 16); break;
       case "lip_ratio": line(L(40), L(42)); line(L(42), L(6)); dot(L(40)); dot(L(42)); dot(L(6)); label(valueStr, L(42), 20); break;
       case "chin_philtrum": line(L(35), L(42)); line(L(42), L(7)); dot(L(35)); dot(L(42)); dot(L(7)); label(valueStr, mid(L(42), L(7)), 16); break;
       case "canthal_tilt": line(L(12), L(13)); line(L(23), L(24)); dot(L(12)); dot(L(13)); dot(L(23)); dot(L(24)); label(valueStr, mid(L(12), L(13)), -14); break;
       case "midface_ratio": { const midX = (L(2).x + L(3).x) / 2; const midY = (L(2).y + L(3).y) / 2; line(L(2), L(3)); line({ x: midX, y: midY }, { x: midX, y: L(40).y }); dot(L(2)); dot(L(3)); dot(L(40)); label(valueStr, { x: midX, y: midY }, -14); break; }
-case "top_third": {
-  const browMidY = (L(17).y + L(18).y + L(28).y + L(29).y) / 4;
-  const browMidX = (L(17).x + L(18).x + L(28).x + L(29).x) / 4;
-  line(L(1), { x: L(1).x, y: browMidY });
-  dot(L(1)); dot(L(17)); dot(L(18)); dot(L(28)); dot(L(29));
-  label(valueStr, { x: L(1).x, y: (L(1).y + browMidY) / 2 }, 0);
-  break;
-}      case "face_width_height": line(L(51), L(52)); dot(L(51)); dot(L(52)); label(valueStr, mid(L(51), L(52)), -14); break;
-      case "brow_eye_distance": line(L(18), L(2)); line(L(29), L(3), true); dot(L(18)); dot(L(2)); dot(L(29)); dot(L(3)); label(valueStr, mid(L(18), L(2)), 16); break;
+      case "top_third": { const browMidY = (L(17).y + L(18).y + L(28).y + L(29).y) / 4; const browMidX = (L(17).x + L(18).x + L(28).x + L(29).x) / 4; line(L(1), { x: L(1).x, y: browMidY }); dot(L(1)); dot(L(17)); dot(L(18)); dot(L(28)); dot(L(29)); label(valueStr, { x: L(1).x, y: (L(1).y + browMidY) / 2 }, 0); break; }
+      case "face_width_height": line(L(51), L(52)); dot(L(51)); dot(L(52)); label(valueStr, mid(L(51), L(52)), -14); break;
       case "total_face_width_height": line(L(51), L(52)); line(L(1), L(7)); dot(L(51)); dot(L(52)); dot(L(1)); dot(L(7)); label(valueStr, mid(L(51), L(52)), -14); break;
       case "eye_separation": line(L(2), L(3)); line(L(51), L(52), true); dot(L(2)); dot(L(3)); dot(L(51)); dot(L(52)); label(valueStr, mid(L(2), L(3)), -14); break;
-case "middle_third": {
-  const browMidY = (L(17).y + L(18).y + L(28).y + L(29).y) / 4;
-  const browMidX = (L(17).x + L(18).x + L(28).x + L(29).x) / 4;
-  line({ x: browMidX, y: browMidY }, L(35));
-  dot(L(17)); dot(L(18)); dot(L(28)); dot(L(29)); dot(L(35));
-  label(valueStr, { x: browMidX, y: (browMidY + L(35).y) / 2 }, 0);
-  break;
-}      case "bigonial_width": line(L(43), L(44)); line(L(51), L(52), true); dot(L(43)); dot(L(44)); dot(L(51)); dot(L(52)); label(valueStr, mid(L(43), L(44)), 16); break;
+      case "middle_third": { const browMidY = (L(17).y + L(18).y + L(28).y + L(29).y) / 4; const browMidX = (L(17).x + L(18).x + L(28).x + L(29).x) / 4; line({ x: browMidX, y: browMidY }, L(35)); dot(L(17)); dot(L(18)); dot(L(28)); dot(L(29)); dot(L(35)); label(valueStr, { x: browMidX, y: (browMidY + L(35).y) / 2 }, 0); break; }
+      case "bigonial_width": line(L(43), L(44)); line(L(51), L(52), true); dot(L(43)); dot(L(44)); dot(L(51)); dot(L(52)); label(valueStr, mid(L(43), L(44)), 16); break;
       case "lower_third_proportion": line(L(35), L(42)); line(L(42), L(7), true); dot(L(35)); dot(L(42)); dot(L(7)); label(valueStr, mid(L(35), L(42)), 16); break;
       case "mouth_nose_ratio": line(L(38), L(39)); line(L(4), L(5), true); dot(L(38)); dot(L(39)); dot(L(4)); dot(L(5)); label(valueStr, mid(L(38), L(39)), 16); break;
-      case "jaw_frontal_angle": {
-  const chinMid = mid(mid(L(47), L(48)), mid(L(45), L(46)));
-  line(L(45), chinMid);
-  line(L(46), chinMid);
-  dot(L(45)); dot(L(46)); dot(chinMid);
-  label(valueStr, { x: chinMid.x - 40, y: chinMid.y + 16 }, 0);
-  break;
-}
-      case "alar_angle": line(L(16), L(35)); line(L(27), L(35)); dot(L(16)); dot(L(27)); dot(L(35)); label(valueStr, L(35), 20); break;
+      case "jaw_frontal_angle": { const chinMid = mid(mid(L(47), L(48)), mid(L(45), L(46))); line(L(45), chinMid); line(L(46), chinMid); dot(L(45)); dot(L(46)); dot(chinMid); label(valueStr, { x: chinMid.x - 40, y: chinMid.y + 16 }, 0); break; }
+      case "alar_angle": line(L(13), L(35)); line(L(24), L(35)); dot(L(13)); dot(L(24)); dot(L(35)); label(valueStr, L(35), 20); break;
       case "neck_width": line(L(49), L(50)); line(L(51), L(52), true); dot(L(49)); dot(L(50)); dot(L(51)); dot(L(52)); label(valueStr, mid(L(49), L(50)), 16); break;
       case "bitemporal_width": line(L(10), L(11)); line(L(51), L(52), true); dot(L(10)); dot(L(11)); dot(L(51)); dot(L(52)); label(valueStr, mid(L(10), L(11)), -14); break;
       case "intercanthal_nasal": line(L(12), L(23)); line(L(4), L(5), true); dot(L(12)); dot(L(23)); dot(L(4)); dot(L(5)); label(valueStr, mid(L(12), L(23)), -14); break;
@@ -219,32 +208,23 @@ case "middle_third": {
         break;
       }
       case "iaa_jfa_deviation": {
-  // IAA lines
-  line(L(16), L(35));
-  line(L(27), L(35));
-  dot(L(16)); dot(L(27)); dot(L(35));
-
-  // JFA lines — find apex intersection
-  const x1 = L(45).x, y1 = L(45).y, x2 = L(47).x, y2 = L(47).y;
-  const x3 = L(46).x, y3 = L(46).y, x4 = L(48).x, y4 = L(48).y;
-  const denom2 = (x1-x2)*(y3-y4) - (y1-y2)*(x3-x4);
-  const t2 = ((x1-x3)*(y3-y4) - (y1-y3)*(x3-x4)) / denom2;
-  const apexX = x1 + t2*(x2-x1);
-  const apexY = y1 + t2*(y2-y1);
-  const apex = { x: apexX, y: apexY };
-
-  line(L(45), apex); line(L(46), apex);
-  dot(L(45)); dot(L(46)); dot(apex, 3);
-
-  // IAA degree label
-  const iaaLabelX = (L(16).x + L(27).x) / 2;
-  label(valueStr, { x: iaaLabelX, y: L(35).y - 20 }, 0);
-
-  // JFA degree label
-  const jfaLabelX = (L(45).x + L(46).x) / 2;
-  label(valueStr, { x: jfaLabelX, y: apex.y - 20 }, 0);
-  break;
-}
+        line(L(16), L(35)); line(L(27), L(35));
+        dot(L(16)); dot(L(27)); dot(L(35));
+        const iaa = angleBetween(L(16), L(35), L(27));
+        label(`${iaa.toFixed(1)}°`, { x: (L(16).x + L(27).x) / 2, y: L(35).y }, -20);
+        const x1 = L(45).x, y1 = L(45).y, x2 = L(47).x, y2 = L(47).y;
+        const x3 = L(46).x, y3 = L(46).y, x4 = L(48).x, y4 = L(48).y;
+        const denom = (x1-x2)*(y3-y4) - (y1-y2)*(x3-x4);
+        const t = ((x1-x3)*(y3-y4) - (y1-y3)*(x3-x4)) / denom;
+        const apexX = x1 + t*(x2-x1);
+        const apexY = y1 + t*(y2-y1);
+        const apex = { x: apexX, y: apexY };
+        line(L(45), apex); line(L(46), apex);
+        dot(L(45)); dot(L(46)); dot(apex, 3);
+        const jfa = angleBetween(L(45), apex, L(46));
+        label(`${jfa.toFixed(1)}°`, { x: (L(45).x + L(46).x) / 2, y: apex.y }, -20);
+        break;
+      }
       default:
         label(valueStr, { x: imageWidth / 2, y: imageHeight / 2 });
         break;
@@ -291,6 +271,7 @@ case "middle_third": {
 
   const scoreColor = getScoreColor(metric.score ?? 5);
   const pct = ((metric.score ?? 0) / 10) * 100;
+  const percentile = getPercentile(metric.score ?? 0);
 
   if (editingLandmarkIndex !== null) {
     return (
@@ -341,20 +322,22 @@ case "middle_third": {
         <div className="flex flex-col md:flex-row" style={{ maxHeight: "85vh" }}>
 
           <div className="flex-1 bg-zinc-900 overflow-hidden relative" style={{ minHeight: 300 }}>
-  <div className="relative w-full h-full">
-              <img
-  src={imageUrl}
-  alt="Face analysis"
-  className="w-full h-full object-cover"
-  style={{ opacity: 0.9, display: "block" }}
-/>
-              <svg
-  className="absolute top-0 left-0 w-full h-full pointer-events-none"
-  viewBox={`0 0 ${imageWidth} ${imageHeight}`}
-  preserveAspectRatio="xMidYMid slice"
->
-                {renderMeasurementLines()}
-              </svg>
+            <div className="relative w-full h-full flex items-center justify-center p-4">
+              <div className="relative inline-block">
+                <img
+                  src={imageUrl}
+                  alt="Face analysis"
+                  className="w-full h-full object-cover"
+                  style={{ maxHeight: "65vh", display: "block" }}
+                />
+                <svg
+                  className="absolute top-0 left-0 w-full h-full pointer-events-none"
+                  viewBox={`0 0 ${imageWidth} ${imageHeight}`}
+                  preserveAspectRatio="none"
+                >
+                  {renderMeasurementLines()}
+                </svg>
+              </div>
             </div>
           </div>
 
@@ -381,11 +364,11 @@ case "middle_third": {
                     <span className="text-sm text-zinc-400 mb-1">/10</span>
                   </div>
                   <p className="text-xs text-zinc-400">{getScoreLabel(metric.score ?? 0)}</p>
-{metric.score !== null && (
-  <p className="text-xs font-medium text-zinc-600 mt-1.5 bg-zinc-100 px-2 py-1 rounded-md inline-block">
-    Better than {getPercentile(metric.score)}% of males
-  </p>
-)}
+                  {metric.score !== null && (
+                    <p className="text-xs font-medium text-zinc-600 mt-1.5 bg-zinc-100 px-2 py-1 rounded-md inline-block">
+                      Better than {percentile}% of males
+                    </p>
+                  )}
                   <div className="mt-3">
                     <div className="relative h-2 rounded-full overflow-hidden" style={{
                       background: "linear-gradient(to right, #ef4444, #f97316, #eab308, #22c55e, #22c55e, #eab308, #f97316, #ef4444)"
@@ -412,44 +395,41 @@ case "middle_third": {
                   <p className="text-sm text-zinc-600 leading-relaxed">{metric.definition.description}</p>
                 </div>
 
-                <div className="px-5 py-4">
+                <div className="px-5 py-4 border-b border-zinc-100">
                   <p className="text-xs text-zinc-400 mb-2 uppercase tracking-widest font-mono">Category</p>
                   <span className="px-2.5 py-1 bg-zinc-100 text-zinc-600 text-xs rounded-full border border-zinc-200">
                     {metric.definition.category}
                   </span>
                 </div>
+
                 {(() => {
-  const insights = METRIC_INSIGHTS[metric.definition.id];
-  if (!insights || metric.score === null) return null;
-  const matching = insights.filter(i => i.condition(metric.score!));
-  if (matching.length === 0) return null;
-  return (
-    <div className="px-5 py-4 border-t border-zinc-100">
-      <p className="text-xs font-mono uppercase tracking-widest text-zinc-400 mb-3">May Indicate</p>
-      <div className="space-y-2">
-        {matching.map((insight, i) => (
-          <div key={i} className={`p-3 rounded-xl border ${
-            insight.type === "positive"
-              ? "bg-green-50 border-green-100"
-              : "bg-red-50 border-red-100"
-          }`}>
-            <div className="flex items-center justify-between mb-1">
-              <p className={`text-xs font-semibold ${
-                insight.type === "positive" ? "text-green-700" : "text-red-700"
-              }`}>{insight.label}</p>
-              <span className={`text-xs font-medium px-1.5 py-0.5 rounded ${
-                insight.type === "positive"
-                  ? "bg-green-100 text-green-700"
-                  : "bg-red-100 text-red-700"
-              }`}>{insight.impact}</span>
-            </div>
-            <p className="text-xs text-zinc-600 leading-relaxed">{insight.description}</p>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-})()}
+                  const insights = METRIC_INSIGHTS[metric.definition.id];
+                  if (!insights || metric.score === null) return null;
+                  const matching = insights.filter(i => i.condition(metric.score!));
+                  if (matching.length === 0) return null;
+                  return (
+                    <div className="px-5 py-4">
+                      <p className="text-xs font-mono uppercase tracking-widest text-zinc-400 mb-3">May Indicate</p>
+                      <div className="space-y-2">
+                        {matching.map((insight, i) => (
+                          <div key={i} className={`p-3 rounded-xl border ${
+                            insight.type === "positive" ? "bg-green-50 border-green-100" : "bg-red-50 border-red-100"
+                          }`}>
+                            <div className="flex items-center justify-between mb-1">
+                              <p className={`text-xs font-semibold ${insight.type === "positive" ? "text-green-700" : "text-red-700"}`}>
+                                {insight.label}
+                              </p>
+                              <span className={`text-xs font-medium px-1.5 py-0.5 rounded ${
+                                insight.type === "positive" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+                              }`}>{insight.impact}</span>
+                            </div>
+                            <p className="text-xs text-zinc-600 leading-relaxed">{insight.description}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })()}
               </>
             )}
 
@@ -458,7 +438,7 @@ case "middle_third": {
                 <div className="px-5 py-4 border-b border-zinc-100">
                   <p className="text-xs font-mono uppercase tracking-widest text-zinc-400 mb-1">Landmarks used</p>
                   <p className="text-xs text-zinc-500 leading-relaxed">
-                    These points define this ratio. If one looks misplaced, tap the edit icon to adjust it — the value and score will update instantly.
+                    These points define this ratio. Tap the edit icon to adjust — the value and score will update instantly.
                   </p>
                 </div>
                 <div>
