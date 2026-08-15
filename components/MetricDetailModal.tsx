@@ -321,8 +321,8 @@ export default function MetricDetailModal({
 
         <div className="flex flex-col md:flex-row" style={{ maxHeight: "85vh" }}>
 
-          <div className="flex-1 overflow-hidden relative" style={{ minHeight: 300 }}>
-            <div className="relative w-full h-full">
+          <div className="flex-1 overflow-hidden relative" style={{ minHeight: 300, maxHeight: "85vh" }}>
+  <div className="absolute inset-0">
               <img
                 src={imageUrl}
                 alt="Face analysis"
