@@ -321,23 +321,21 @@ export default function MetricDetailModal({
 
         <div className="flex flex-col md:flex-row" style={{ maxHeight: "85vh" }}>
 
-          <div className="flex-1 bg-zinc-900 overflow-hidden relative" style={{ minHeight: 300 }}>
-            <div className="relative w-full h-full flex items-center justify-center p-4">
-              <div className="relative inline-block">
-                <img
-  src={imageUrl}
-  alt="Face analysis"
-  className="w-full h-full object-contain"
-  style={{ maxHeight: "65vh", display: "block" }}
-/>
-                <svg
-                  className="absolute top-0 left-0 w-full h-full pointer-events-none"
-                  viewBox={`0 0 ${imageWidth} ${imageHeight}`}
-                  preserveAspectRatio="none"
-                >
-                  {renderMeasurementLines()}
-                </svg>
-              </div>
+          <div className="flex-1 overflow-hidden relative" style={{ minHeight: 300 }}>
+            <div className="relative w-full h-full">
+              <img
+                src={imageUrl}
+                alt="Face analysis"
+                className="w-full h-full object-cover"
+                style={{ display: "block" }}
+              />
+              <svg
+                className="absolute top-0 left-0 w-full h-full pointer-events-none"
+                viewBox={`0 0 ${imageWidth} ${imageHeight}`}
+                preserveAspectRatio="xMidYMid slice"
+              >
+                {renderMeasurementLines()}
+              </svg>
             </div>
           </div>
 
