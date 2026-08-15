@@ -1,4 +1,4 @@
-p"use client";
+"use client";
 
 import { useEffect, useCallback, useState } from "react";
 import { MetricResult, Point } from "@/lib/types";
